@@ -5,7 +5,8 @@ from model.model import Module, Type, PrimitiveType
 
 
 class PythonModuleGenerator:
-    out = CodeWriter(CodeWriterMode.Python)
+    _out = CodeWriter(CodeWriterMode.Python)
+    _complexTypesWritten = set()
 
     def __init__(self, module: Module):
         self.module = module
@@ -13,41 +14,45 @@ class PythonModuleGenerator:
     def run(self):
         for enum in self.module.enums:
             self.write_enum(enum)
+            self._complexTypesWritten.add(enum.name)
         for struct in self.module.structs:
             self.write_struct(struct)
+            self._complexTypesWritten.add(struct.name)
 
     def write_enum(self, enum):
-        self.out.write('class', enum.name, '(Enum):')
+        self._out.write('class', enum.name, '(Enum):')
         def write_enum_body():
             ordinal = 1
             for value in enum.values:
-                self.out.write(value, ' = ', str(ordinal))
+                self._out.write(value, ' = ', str(ordinal))
                 ordinal += 1
-        self.out.block(write_enum_body)
-        self.out.writeln()
+        self._out.block(write_enum_body)
+        self._out.writeln()
 
     def write_struct(self, struct):
-        self.out.write('class', struct.name)
+        self._out.write('class', struct.name)
         def write_struct_body():
             for field in struct.fields:
-                self.out.write(field.name, ': ', pythonTypeForType(field.type))
-        self.out.block(write_struct_body)
-        self.out.writeln()
+                self._out.write(field.name, ': ', pythonTypeForType(field.type))
+        self._out.block(write_struct_body)
+        self._out.writeln()
 
-def pythonTypeForType(t: Type):
-    if type(t) is PrimitiveType:
-        primitive = typing.cast(PrimitiveType, t)
-        if primitive.name == 'Boolean':
-            return 'bool'
-        elif primitive.is_integer:
-            return 'int'
-        elif primitive.name == 'Float' or primitive.name == 'Double':
-            return 'float'
-        elif primitive.name == 'String':
-            return 'str'
+    def pythonTypeForType(self, t: Type):
+        if type(t) is PrimitiveType:
+            primitive = typing.cast(PrimitiveType, t)
+            if primitive.name == 'Boolean':
+                return 'bool'
+            elif primitive.is_integer:
+                return 'int'
+            elif primitive.name == 'Float' or primitive.name == 'Double':
+                return 'float'
+            elif primitive.name == 'String':
+                return 'str'
+            else:
+                raise ValueError("Unsupported type [" + t.name + "]")
         else:
-            raise ValueError("Unsupported type [" + t.name + "]")
-    else:
-        # TODO import if necessary
-        # TODO quote as forward if outer type or written before
-        return t.name
+            # TODO import if necessary
+            if t.name in self._complexTypesWritten:
+                return t.name
+            else:
+                return "'" + t.name + "'"
