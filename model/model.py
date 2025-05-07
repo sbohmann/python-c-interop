@@ -1,6 +1,5 @@
 import typing
 from abc import abstractmethod
-from enum import Enum
 
 
 class Type:
@@ -13,22 +12,26 @@ class Type:
 
 
 class PrimitiveType(Type):
-    def __init__(self, name: str):
+    is_integer: bool
+
+    def __init__(self, name: str, **keywords):
         self.name = name
         self.type_arguments = []
+        self.is_integer = keywords.get('is_integer') is True
 
 
 PrimitiveType.Boolean = PrimitiveType('Boolean')
-PrimitiveType.Integer = PrimitiveType('Integer')
-PrimitiveType.Int8 = PrimitiveType('Int8')
-PrimitiveType.UInt8 = PrimitiveType('UInt8')
-PrimitiveType.Int16 = PrimitiveType('Int16')
-PrimitiveType.UInt16 = PrimitiveType('UInt16')
-PrimitiveType.Int32 = PrimitiveType('Int32')
-PrimitiveType.UInt32 = PrimitiveType('UInt32')
-PrimitiveType.Int64 = PrimitiveType('Int64')
-PrimitiveType.UInt64 = PrimitiveType('UInt64')
+PrimitiveType.Integer = PrimitiveType('Integer', is_integer=True)
+PrimitiveType.Int8 = PrimitiveType('Int8', is_integer=True)
+PrimitiveType.UInt8 = PrimitiveType('UInt8', is_integer=True)
+PrimitiveType.Int16 = PrimitiveType('Int16', is_integer=True)
+PrimitiveType.UInt16 = PrimitiveType('UInt16', is_integer=True)
+PrimitiveType.Int32 = PrimitiveType('Int32', is_integer=True)
+PrimitiveType.UInt32 = PrimitiveType('UInt32', is_integer=True)
+PrimitiveType.Int64 = PrimitiveType('Int64', is_integer=True)
+PrimitiveType.UInt64 = PrimitiveType('UInt64', is_integer=True)
 PrimitiveType.Float = PrimitiveType('Float')
+PrimitiveType.Float = PrimitiveType('Double')
 PrimitiveType.String = PrimitiveType('String')
 
 
@@ -45,7 +48,7 @@ class Struct(Type):
         self.fields = fields
 
 
-class Enum(Type):
+class Enumeration(Type):
     values: list[str]
 
     def __init__(self, name: str, values: list[str]):
@@ -75,8 +78,8 @@ class Module:
     name: str
     structs: list[Struct]
     structForName: dict[str, Struct]
-    enums: list[Enum]
-    enumForName: dict[str, Enum]
+    enums: list[Enumeration]
+    enumForName: dict[str, Enumeration]
 
     def __init__(self, name: str):
         self.name = name
@@ -84,8 +87,8 @@ class Module:
     def add(self, new_type: Type):
         if type(new_type) is Struct:
             self.structs.append(typing.cast(Struct, new_type))
-        elif type(new_type) is Enum:
-            self.enums.append(typing.cast(Enum, new_type))
+        elif type(new_type) is Enumeration:
+            self.enums.append(typing.cast(Enumeration, new_type))
         else:
             raise ValueError("Attempting to add a type of kind "
                              + str(type(new_type))
@@ -97,5 +100,5 @@ class Model:
 
     def addModule(self, moduleName: str):
         newModule = Module(moduleName)
-        modules.append(newModule)
+        self.modules.append(newModule)
         return newModule

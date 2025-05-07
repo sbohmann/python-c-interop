@@ -32,12 +32,12 @@ class CodeWriter:
         for value in values:
             self._buffer.append(str(value))
 
-    def writeln(self, value):
-        self.write(value)
+    def writeln(self, *values):
+        self.write(*values)
         self.write('\n')
         self._at_line_start = True
 
-    def block(self, write_code: Callable[['CodeWriter'], None]):
+    def block(self, write_code):
         self.writeln(self._opening_bracket)
         self._indentation_level += 1
         write_code(self)
