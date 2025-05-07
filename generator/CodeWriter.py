@@ -4,9 +4,11 @@ from typing import Callable
 _indentation_step = 4
 _indentation = ' ' * _indentation_step
 
+
 class CodeWriterMode(Enum):
     C = 1
     Python = 2
+
 
 class CodeWriter:
     _buffer: list[str] = []
@@ -44,4 +46,3 @@ class CodeWriter:
 
     def result(self):
         return ''.join(self._buffer)
-
