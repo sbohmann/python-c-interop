@@ -13,13 +13,13 @@ class PythonModuleGenerator:
 
     def run(self):
         for enum in self.module.enums:
-            self.write_enum(enum)
+            self._write_enum(enum)
             self._complexTypesWritten.add(enum.name)
         for struct in self.module.structs:
-            self.write_struct(struct)
+            self._write_struct(struct)
             self._complexTypesWritten.add(struct.name)
 
-    def write_enum(self, enum):
+    def _write_enum(self, enum):
         self._out.write('class', enum.name, '(Enum):')
         def write_enum_body():
             ordinal = 1
@@ -29,15 +29,15 @@ class PythonModuleGenerator:
         self._out.block(write_enum_body)
         self._out.writeln()
 
-    def write_struct(self, struct):
+    def _write_struct(self, struct):
         self._out.write('class', struct.name)
         def write_struct_body():
             for field in struct.fields:
-                self._out.write(field.name, ': ', pythonTypeForType(field.type))
+                self._out.write(field.name, ': ', self._python_type_for_type(field.type))
         self._out.block(write_struct_body)
         self._out.writeln()
 
-    def pythonTypeForType(self, t: Type):
+    def _python_type_for_type(self, t: Type):
         if type(t) is PrimitiveType:
             primitive = typing.cast(PrimitiveType, t)
             if primitive.name == 'Boolean':
