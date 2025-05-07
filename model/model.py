@@ -1,19 +1,10 @@
+import typing
 from abc import abstractmethod
 from enum import Enum
 
 
-class KindOfType(Enum):
-    Primitive = 1
-    Struct = 2
-    Enum = 3
-    List = 4
-    Set = 5
-    Map = 6
-
-
 class Type:
     name: str
-    kind_of_type: KindOfType
     type_arguments: list['Type']
 
     @abstractmethod
@@ -24,7 +15,6 @@ class Type:
 class PrimitiveType(Type):
     def __init__(self, name: str):
         self.name = name
-        self.kind_of_type = KindOfType.Primitive
         self.type_arguments = []
 
 
@@ -52,7 +42,6 @@ class Struct(Type):
 
     def __init__(self, name: str, fields: list[Field]):
         self.name = name
-        self.kind_of_type = KindOfType.Struct
         self.fields = fields
 
 
@@ -61,37 +50,52 @@ class Enum(Type):
 
     def __init__(self, name: str, values: list[str]):
         self.name = name
-        self.kind_of_type = KindOfType.Enum
         self.values = values
 
 
 class List(Type):
     def __init__(self, name: str, element_type: Type):
         self.name = name
-        self.kind_of_type = KindOfType.List
         self.type_arguments = [element_type]
 
 
 class Set(Type):
     def __init__(self, name: str, element_type: Type):
         self.name = name
-        self.kind_of_type = KindOfType.Set
         self.type_arguments = [element_type]
 
 
 class Map(Type):
     def __init__(self, name: str, key_type: Type, value_type: Type):
         self.name = name
-        self.kind_of_type = KindOfType.Map
         self.type_arguments = [key_type, value_type]
 
 
 class Module:
+    name: str
     structs: list[Struct]
     structForName: dict[str, Struct]
     enums: list[Enum]
     enumForName: dict[str, Enum]
 
+    def __init__(self, name: str):
+        self.name = name
+
+    def add(self, new_type: Type):
+        if type(new_type) is Struct:
+            self.structs.append(typing.cast(Struct, new_type))
+        elif type(new_type) is Enum:
+            self.enums.append(typing.cast(Enum, new_type))
+        else:
+            raise ValueError("Attempting to add a type of kind "
+                             + str(type(new_type))
+                             + " to module " + self.name)
+
 
 class Model:
     modules: list[Module]
+
+    def addModule(self, moduleName: str):
+        newModule = Module(moduleName)
+        modules.append(newModule)
+        return newModule
