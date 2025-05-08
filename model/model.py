@@ -24,7 +24,7 @@ class PrimitiveType(Type):
     Int64: 'PrimitiveType'
     UInt64: 'PrimitiveType'
     Float: 'PrimitiveType'
-    Float: 'PrimitiveType'
+    Double: 'PrimitiveType'
     String: 'PrimitiveType'
 
     def __init__(self, name: str, **keywords):
@@ -44,7 +44,7 @@ PrimitiveType.UInt32 = PrimitiveType('UInt32', is_integer=True)
 PrimitiveType.Int64 = PrimitiveType('Int64', is_integer=True)
 PrimitiveType.UInt64 = PrimitiveType('UInt64', is_integer=True)
 PrimitiveType.Float = PrimitiveType('Float')
-PrimitiveType.Float = PrimitiveType('Double')
+PrimitiveType.Double = PrimitiveType('Double')
 PrimitiveType.String = PrimitiveType('String')
 
 
@@ -59,12 +59,16 @@ class Struct(Type):
 
     def __init__(self, name: str, *fields: Field):
         super().__init__(name)
+        if len(fields) == 0:
+            raise ValueError("No fields provided")
         self.fields = list(fields)
 
 
 class Enumeration(Type):
     def __init__(self, name: str, *values: str):
         super().__init__(name)
+        if len(values) == 0:
+            raise ValueError("No values provided")
         self.values: list[str] = list(values)
 
 

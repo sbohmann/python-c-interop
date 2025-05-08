@@ -37,12 +37,12 @@ class CodeWriter:
         self.write('\n')
         self._at_line_start = True
 
-    def block(self, write_code):
+    def block(self, write_code, suffix=''):
         self.writeln(self._opening_bracket)
         self._indentation_level += 1
         write_code()
         self._indentation_level -= 1
-        self.writeln(self._closing_bracket)
+        self.writeln(self._closing_bracket, suffix)
 
     def result(self):
         return ''.join(self._buffer)

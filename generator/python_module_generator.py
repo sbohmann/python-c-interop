@@ -1,6 +1,6 @@
 import typing
 
-from generator.CodeWriter import CodeWriter, CodeWriterMode
+from generator.codewriter import CodeWriter, CodeWriterMode
 from model.model import Module, Type, PrimitiveType
 
 
@@ -43,13 +43,13 @@ class PythonModuleGenerator:
     def _python_type_for_type(self, t: Type):
         if type(t) is PrimitiveType:
             primitive = typing.cast(PrimitiveType, t)
-            if primitive.name == 'Boolean':
+            if primitive is PrimitiveType.Boolean:
                 return 'bool'
             elif primitive.is_integer:
                 return 'int'
-            elif primitive.name == 'Float' or primitive.name == 'Double':
+            elif primitive is PrimitiveType.Float or primitive is PrimitiveType.Double:
                 return 'float'
-            elif primitive.name == 'String':
+            elif primitive is PrimitiveType.String:
                 return 'str'
             else:
                 raise ValueError("Unsupported type [" + t.name + "]")
