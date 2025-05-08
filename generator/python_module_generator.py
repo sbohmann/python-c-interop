@@ -33,6 +33,7 @@ class PythonModuleGenerator:
         self._out.writeln()
 
     def _write_struct(self, struct):
+        self._out.writeln('@dataclass')
         self._out.write('class ', struct.name)
         def write_struct_body():
             for field in struct.fields:
