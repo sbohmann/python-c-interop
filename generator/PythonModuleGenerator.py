@@ -19,21 +19,24 @@ class PythonModuleGenerator:
             self._write_struct(struct)
             self._complexTypesWritten.add(struct.name)
 
+    def result(self):
+        return self._out.result()
+
     def _write_enum(self, enum):
-        self._out.write('class', enum.name, '(Enum):')
+        self._out.write('class ', enum.name, '(Enum):')
         def write_enum_body():
             ordinal = 1
             for value in enum.values:
-                self._out.write(value, ' = ', str(ordinal))
+                self._out.writeln(value, ' = ', str(ordinal))
                 ordinal += 1
         self._out.block(write_enum_body)
         self._out.writeln()
 
     def _write_struct(self, struct):
-        self._out.write('class', struct.name)
+        self._out.write('class ', struct.name)
         def write_struct_body():
             for field in struct.fields:
-                self._out.write(field.name, ': ', self._python_type_for_type(field.type))
+                self._out.writeln(field.name, ': ', self._python_type_for_type(field.type))
         self._out.block(write_struct_body)
         self._out.writeln()
 

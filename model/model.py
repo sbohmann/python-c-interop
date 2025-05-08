@@ -7,12 +7,25 @@ class Type:
     type_arguments: list['Type']
 
     @abstractmethod
-    def __init__(self, name: str, type_arguments: list['Type']):
-        pass
+    def __init__(self, name: str, *type_arguments: 'Type'):
+        self.name: str = name
+        self.type_arguments: list['Type'] = list(type_arguments)
 
 
 class PrimitiveType(Type):
-    is_integer: bool
+    Boolean: 'PrimitiveType'
+    Integer: 'PrimitiveType'
+    Int8: 'PrimitiveType'
+    UInt8: 'PrimitiveType'
+    Int16: 'PrimitiveType'
+    UInt16: 'PrimitiveType'
+    Int32: 'PrimitiveType'
+    UInt32: 'PrimitiveType'
+    Int64: 'PrimitiveType'
+    UInt64: 'PrimitiveType'
+    Float: 'PrimitiveType'
+    Float: 'PrimitiveType'
+    String: 'PrimitiveType'
 
     def __init__(self, name: str, **keywords):
         self.name = name
@@ -36,24 +49,23 @@ PrimitiveType.String = PrimitiveType('String')
 
 
 class Field:
-    name: str
-    type: Type
+    def __init__(self, name: str, type_: Type):
+        self.name: str = name
+        self.type: Type = type_
 
 
 class Struct(Type):
     fields: list[Field]
 
-    def __init__(self, name: str, fields: list[Field]):
-        self.name = name
-        self.fields = fields
+    def __init__(self, name: str, *fields: Field):
+        super().__init__(name)
+        self.fields = list(fields)
 
 
 class Enumeration(Type):
-    values: list[str]
-
-    def __init__(self, name: str, values: list[str]):
-        self.name = name
-        self.values = values
+    def __init__(self, name: str, *values: str):
+        super().__init__(name)
+        self.values: list[str] = list(values)
 
 
 class List(Type):
@@ -75,30 +87,25 @@ class Map(Type):
 
 
 class Module:
-    name: str
-    structs: list[Struct]
-    structForName: dict[str, Struct]
-    enums: list[Enumeration]
-    enumForName: dict[str, Enumeration]
+    def __init__(self, name: str, *types: Type):
+        self.name: str = name
+        self.structs: list[Struct] = []
+        self.structForName: dict[str, Struct] = dict()
+        self.enums: list[Enumeration] = []
+        self.enumForName: dict[str, Enumeration] = dict()
 
-    def __init__(self, name: str):
-        self.name = name
-
-    def add(self, new_type: Type):
-        if type(new_type) is Struct:
-            self.structs.append(typing.cast(Struct, new_type))
-        elif type(new_type) is Enumeration:
-            self.enums.append(typing.cast(Enumeration, new_type))
-        else:
-            raise ValueError("Attempting to add a type of kind "
-                             + str(type(new_type))
-                             + " to module " + self.name)
+        for t in types:
+            if type(t) is Struct:
+                self.structs.append(typing.cast(Struct, t))
+            elif type(t) is Enumeration:
+                self.enums.append(typing.cast(Enumeration, t))
+            else:
+                raise ValueError("Attempting to add a type of kind "
+                                 + str(type(t))
+                                 + " to module " + self.name)
 
 
 class Model:
-    modules: list[Module]
-
-    def addModule(self, moduleName: str):
-        newModule = Module(moduleName)
-        self.modules.append(newModule)
-        return newModule
+    def __init__(self, name: str, *modules: Module):
+        self.name: str = name
+        self.modules: list[Module] = list(modules)
