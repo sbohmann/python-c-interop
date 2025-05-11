@@ -4,35 +4,49 @@ from generator.codewriter import CodeWriter, CodeWriterMode
 from model.model import Module, Type, PrimitiveType, Struct, Enumeration
 
 
-class CPythonModuleGenerator:
-    _out = CodeWriter(CodeWriterMode.C)
+class CPythonConversionGenerator:
+    _header = CodeWriter(CodeWriterMode.C)
+    _code = CodeWriter(CodeWriterMode.C)
 
     def __init__(self, module: Module):
         self.module = module
 
     def run(self):
         for enum in self.module.enums:
-            self._write_enum(enum)
-        for struct in self.module.structs:
-            self._write_struct(struct)
+            self._write_enum_python_to_c_conversion(enum)
+            # self._write_enum_c_to_python_conversion(enum)
+        # for struct in self.module.structs:
+            # self._write_struct(struct)
 
     def result(self):
-        return self._out.result()
+        return (self._header.result(), self._code.result())
 
-    def _write_enum(self, enum):
-        self._out.write('enum ', enum.name, ' ')
-        def write_enum_body():
+    def _write_enum_python_to_c_conversion(self, enum):
+        signature = 'struct ' + enum.name + '(const PyObject *python_enum)'
+        self._header.writeln(signature, ';')
+        self._code.write(signature, ' ')
+        def write_body():
+            self._code.writeln(
+'''int ordinal = -1;
+    with_attribute(
+        python_control_algorithm,
+        "value",
+        python_value,
+        with_pylong_as_int64(
+            python_value,
+            value,
+            ordinal = value));''')
+            self._code.writeln('switch (ordinal) {')
             ordinal = 1
-            first = True
             for value in enum.values:
-                if not first:
-                    self._out.writeln(',')
-                self._out.write(value, ' = ', str(ordinal))
+                self._code.writeln('    case ', value, ':')
+                self._code.writeln('        return ', value, ';')
                 ordinal += 1
-                first = False
-            self._out.writeln()
-        self._out.block(write_enum_body, ';')
-        self._out.writeln()
+            self._code.writeln('    default', ':')
+            self._code.writeln('        fail_with_message("Illegal ordinal value for enum ', enum.name, ' [%d]", ordinal);')
+            self._code.writeln('}')
+        self._code.block(write_body, ';')
+        self._code.writeln()
 
     def _write_struct(self, struct):
         self._out.write('struct ', struct.name)

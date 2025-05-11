@@ -4,7 +4,7 @@ from generator.codewriter import CodeWriter, CodeWriterMode
 from model.model import Module, Type, PrimitiveType
 
 
-class PythonModuleGenerator:
+class PythonModuleInformationGenerator:
     _out = CodeWriter(CodeWriterMode.Python)
     _complexTypesWritten = set()
 

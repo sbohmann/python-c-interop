@@ -11,13 +11,13 @@ class CodeWriterMode(Enum):
 
 
 class CodeWriter:
-    _buffer: list[str] = []
-    _indentation_level = 0
-    _at_line_start = True
-    _opening_bracket: str
-    _closing_bracket: str
-
     def __init__(self, mode: CodeWriterMode):
+        self._buffer: list[str] = []
+        self._indentation_level = 0
+        self._at_line_start = True
+        self._opening_bracket: str
+        self._closing_bracket: str
+
         if mode is CodeWriterMode.C:
             self._opening_bracket = '{'
             self._closing_bracket = '}'
