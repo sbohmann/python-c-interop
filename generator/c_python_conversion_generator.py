@@ -71,13 +71,17 @@ class CPythonConversionGenerator:
         self._code.write(signature, ' ')
 
         def write_body(out):
-            out.writeln('struct ', struct.name, ' = {};')
+            out.writeln('struct ', struct.name, ' result = {};')
             for field in struct.fields:
+                if field.type is Struct:
+                    out.writeln('result.', field.name, ' = ', struct.name, '_to_c(python.struct.', field.name, ')')
+                elif field.type is Enumeration:
+                    out.writeln('result.', field.name, ' = ', struct.name, '_to_c(python.struct.', field.name, ')')
                 out.writeln('with_attribute(')
                 out.writeln('    python_struct,')
                 out.writeln('    ', field.name, ',')
                 out.writeln('    python_struct.', field.name, ',')
-                out.writeln('with_ = value')
+                out.writeln('    with_pylong_as_int64 = value')
 
         self._code.block(write_body, ';')
 
