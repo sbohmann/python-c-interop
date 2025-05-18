@@ -14,28 +14,29 @@ class CPythonConversionGenerator:
     def run(self):
         for enum in self.module.enums:
             self._write_enum_python_to_c_conversion(enum)
-            # self._write_enum_c_to_python_conversion(enum)
-        # for struct in self.module.structs:
-            # self._write_struct(struct)
+            self._write_enum_c_to_python_conversion(enum)
+        for struct in self.module.structs:
+            self._write_struct_python_to_c_conversion(struct)
+            # self._write_struct_c_to_python_conversion(struct)
 
     def result(self):
         return (self._header.result(), self._code.result())
 
     def _write_enum_python_to_c_conversion(self, enum):
-        signature = 'struct ' + enum.name + '(const PyObject *python_enum)'
+        signature = 'struct ' + enum.name + '_to_c(const PyObject *python_enum)'
         self._header.writeln(signature, ';')
         self._code.write(signature, ' ')
+
         def write_body():
-            self._code.writeln(
-'''int ordinal = -1;
-    with_attribute(
-        python_control_algorithm,
-        "value",
-        python_value,
-        with_pylong_as_int64(
-            python_value,
-            value,
-            ordinal = value));''')
+            self._code.writeln('int ordinal = -1;')
+            self._code.writeln('with_attribute(')
+            self._code.writeln('    python_enum,')
+            self._code.writeln('    "value",')
+            self._code.writeln('    python_value,')
+            self._code.writeln('    with_pylong_as_int64(')
+            self._code.writeln('        python_value,')
+            self._code.writeln('        value,')
+            self._code.writeln('        ordinal = value));''')
             self._code.writeln('switch (ordinal) {')
             ordinal = 1
             for value in enum.values:
@@ -48,13 +49,37 @@ class CPythonConversionGenerator:
         self._code.block(write_body, ';')
         self._code.writeln()
 
-    def _write_struct(self, struct):
-        self._out.write('struct ', struct.name)
-        def write_struct_body():
+    def _write_enum_c_to_python_conversion(self, enum):
+        signature = 'PyObject * ' + enum.name + '_to_python(struct ' + enum.name + ' value)'
+        self._header.writeln(signature, ';')
+        self._code.write(signature, ' ')
+
+        def write_body():
+            self._code.writeln('static PyObject *enum_class = load_class("', self.module.name, '", "', enum.name, '")')
+            self._code.writeln('result = return PyObject_CallMethod(enum_class, "i", (int) value);')
+            self._code.write('if (result == NULL) ')
+            self._code.block(lambda: self._code.writeln(
+                'fail_with_message("Unable to convert ordinal value [%d] to enum ', enum.name, ', value);'))
+            self._code.writeln('return result;')
+
+        self._code.block(write_body, ';')
+        self._code.writeln()
+
+    def _write_struct_python_to_c_conversion(self, struct):
+        signature = 'struct ' + struct.name + ' ' + struct.name + '_to_c(PyObject *python_struct)'
+        self._header.writeln(signature, ';')
+        self._code.write(signature, ' ')
+
+        def write_body(out):
+            out.writeln('struct ', struct.name, ' = {};')
             for field in struct.fields:
-                self._out.writeln(self._c_type_for_type(field.type), ' ', field.name, ';')
-        self._out.block(write_struct_body, ';')
-        self._out.writeln()
+                out.writeln('with_attribute(')
+                out.writeln('    python_struct,')
+                out.writeln('    ', field.name, ',')
+                out.writeln('    python_struct.', field.name, ',')
+                out.writeln('with_ = value')
+
+        self._code.block(write_body, ';')
 
     def _c_type_for_type(self, t: Type):
         if type(t) is PrimitiveType:

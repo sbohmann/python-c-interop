@@ -40,7 +40,7 @@ class CodeWriter:
     def block(self, write_code, suffix=''):
         self.writeln(self._opening_bracket)
         self._indentation_level += 1
-        write_code()
+        write_code(*[self])
         self._indentation_level -= 1
         self.writeln(self._closing_bracket, suffix)
 
