@@ -30,14 +30,11 @@ class CPythonConversionGenerator:
 
         def write_body(out):
             out.writeln('int ordinal = -1;')
-            out.writeln('with_attribute(')
-            out.writeln('    python_enum,')
-            out.writeln('    "value",')
-            out.writeln('    python_value,')
-            out.writeln('    with_pylong_as_int64(')
-            out.writeln('        python_value,')
-            out.writeln('        value,')
-            out.writeln('        ordinal = value));''')
+            (with_int64_attribute(
+                'python_enum',
+                'value',
+                'ordinal = value')
+             .writeln(self._code))
             out.writeln('switch (ordinal) {')
             ordinal = 1
             for value in enum.values:
