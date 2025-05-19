@@ -1,5 +1,6 @@
 import typing
 
+from generator.attributes import with_attribute
 from generator.codewriter import CodeWriter, CodeWriterMode
 from model.model import Module, Type, PrimitiveType, Struct, Enumeration
 
@@ -27,25 +28,26 @@ class CPythonConversionGenerator:
         self._header.writeln(signature, ';')
         self._code.write(signature, ' ')
 
-        def write_body():
-            self._code.writeln('int ordinal = -1;')
-            self._code.writeln('with_attribute(')
-            self._code.writeln('    python_enum,')
-            self._code.writeln('    "value",')
-            self._code.writeln('    python_value,')
-            self._code.writeln('    with_pylong_as_int64(')
-            self._code.writeln('        python_value,')
-            self._code.writeln('        value,')
-            self._code.writeln('        ordinal = value));''')
-            self._code.writeln('switch (ordinal) {')
+        def write_body(out):
+            out.writeln('int ordinal = -1;')
+            out.writeln('with_attribute(')
+            out.writeln('    python_enum,')
+            out.writeln('    "value",')
+            out.writeln('    python_value,')
+            out.writeln('    with_pylong_as_int64(')
+            out.writeln('        python_value,')
+            out.writeln('        value,')
+            out.writeln('        ordinal = value));''')
+            out.writeln('switch (ordinal) {')
             ordinal = 1
             for value in enum.values:
-                self._code.writeln('    case ', value, ':')
-                self._code.writeln('        return ', value, ';')
+                out.writeln('    case ', value, ':')
+                out.writeln('        return ', value, ';')
                 ordinal += 1
-            self._code.writeln('    default', ':')
-            self._code.writeln('        fail_with_message("Illegal ordinal value for enum ', enum.name, ' [%d]", ordinal);')
-            self._code.writeln('}')
+            out.writeln('    default', ':')
+            out.writeln('        fail_with_message("Illegal ordinal value for enum ', enum.name, ' [%d]", ordinal);')
+            out.writeln('}')
+
         self._code.block(write_body, ';')
         self._code.writeln()
 
@@ -54,13 +56,13 @@ class CPythonConversionGenerator:
         self._header.writeln(signature, ';')
         self._code.write(signature, ' ')
 
-        def write_body():
-            self._code.writeln('static PyObject *enum_class = load_class("', self.module.name, '", "', enum.name, '")')
-            self._code.writeln('result = return PyObject_CallMethod(enum_class, "i", (int) value);')
-            self._code.write('if (result == NULL) ')
-            self._code.block(lambda: self._code.writeln(
+        def write_body(out):
+            out.writeln('static PyObject *enum_class = load_class("', self.module.name, '", "', enum.name, '")')
+            out.writeln('result = return PyObject_CallMethod(enum_class, "i", (int) value);')
+            out.write('if (result == NULL) ')
+            out.block(lambda: out.writeln(
                 'fail_with_message("Unable to convert ordinal value [%d] to enum ', enum.name, ', value);'))
-            self._code.writeln('return result;')
+            out.writeln('return result;')
 
         self._code.block(write_body, ';')
         self._code.writeln()
@@ -77,11 +79,12 @@ class CPythonConversionGenerator:
                     out.writeln('result.', field.name, ' = ', struct.name, '_to_c(python.struct.', field.name, ')')
                 elif field.type is Enumeration:
                     out.writeln('result.', field.name, ' = ', struct.name, '_to_c(python.struct.', field.name, ')')
-                out.writeln('with_attribute(')
-                out.writeln('    python_struct,')
-                out.writeln('    ', field.name, ',')
-                out.writeln('    python_struct.', field.name, ',')
-                out.writeln('    with_pylong_as_int64 = value')
+                with_attribute(
+                    out,
+                    'python_struct',
+                    field.name,
+                    '...using python_value...')
+                # out.writeln('    with_pylong_as_int64 = value')
 
         self._code.block(write_body, ';')
 
