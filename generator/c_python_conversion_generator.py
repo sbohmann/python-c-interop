@@ -18,7 +18,7 @@ class CPythonConversionGenerator:
             self._write_enum_c_to_python_conversion(enum)
         for struct in self.module.structs:
             self._write_struct_python_to_c_conversion(struct)
-            # self._write_struct_c_to_python_conversion(struct)
+            self._write_struct_c_to_python_conversion(struct)
 
     def result(self):
         return (self._header.result(), self._code.result())
@@ -49,7 +49,7 @@ class CPythonConversionGenerator:
         self._code.writeln()
 
     def _write_enum_c_to_python_conversion(self, enum):
-        signature = 'PyObject * ' + enum.name + '_to_python(struct ' + enum.name + ' value)'
+        signature = 'PyObject * ' + enum.name + '_to_python(enum ' + enum.name + ' value)'
         self._header.writeln(signature, ';')
         self._code.write(signature, ' ')
 
@@ -73,9 +73,9 @@ class CPythonConversionGenerator:
             out.writeln('struct ', struct.name, ' result = {};')
             for field in struct.fields:
                 if field.type is Struct:
-                    out.writeln('result.', field.name, ' = ', struct.name, '_to_c(python.struct.', field.name, ')')
+                    out.writeln('result.', field.name, ' = ', field.type.name, '_to_c(python_struct.', field.name, ')')
                 elif field.type is Enumeration:
-                    out.writeln('result.', field.name, ' = ', struct.name, '_to_c(python.struct.', field.name, ')')
+                    out.writeln('result.', field.name, ' = ', field.type.name, '_to_c(python_struct.', field.name, ')')
                 (with_int64_attribute(
                     'python_struct',
                     field.name,
@@ -84,6 +84,26 @@ class CPythonConversionGenerator:
             out.writeln('return result;')
 
         self._code.block(write_body, ';')
+        self._code.writeln()
+
+    def _write_struct_c_to_python_conversion(self, struct):
+        signature = 'PyObject * ' + struct.name + '_to_python(struct ' + struct.name + ' value)'
+        self._header.writeln(signature, ';')
+        self._code.write(signature, ' ')
+
+        def write_body(out):
+            out.writeln('static PyObject *struct_class = load_class("', self.module.name, '", "', struct.name, '")')
+            out.writeln('PyObject *result = PyObject_CallMethod(struct_class, "");')
+            out.write('if (result == NULL) ')
+            out.block(lambda: out.writeln(
+                'fail_with_message("Unable to instantiate struct ', struct.name, ');'))
+            for field in struct.fields:
+                out.write('if (PyObject_SetAttrString(target, attribute_name, python_value) != 0) ')
+                out.block(lambda: out.writeln('fail_with_message("Failed to set attribute ["', field.name, '"]");'))
+                out.writeln('return result;')
+
+        self._code.block(write_body, ';')
+        self._code.writeln()
 
     def _c_type_for_type(self, t: Type):
         if type(t) is PrimitiveType:
