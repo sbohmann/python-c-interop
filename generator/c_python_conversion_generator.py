@@ -1,6 +1,6 @@
 import typing
 
-from generator.attributes import with_attribute
+from generator.attributes import with_attribute, with_int64, with_int64_attribute
 from generator.codewriter import CodeWriter, CodeWriterMode
 from model.model import Module, Type, PrimitiveType, Struct, Enumeration
 
@@ -79,12 +79,12 @@ class CPythonConversionGenerator:
                     out.writeln('result.', field.name, ' = ', struct.name, '_to_c(python.struct.', field.name, ')')
                 elif field.type is Enumeration:
                     out.writeln('result.', field.name, ' = ', struct.name, '_to_c(python.struct.', field.name, ')')
-                with_attribute(
-                    out,
+                (with_int64_attribute(
                     'python_struct',
                     field.name,
-                    '...using python_value...')
-                # out.writeln('    with_pylong_as_int64 = value')
+                    'result.' + field.name + ' = value')
+                 .writeln(out))
+            out.writeln('return result;')
 
         self._code.block(write_body, ';')
 

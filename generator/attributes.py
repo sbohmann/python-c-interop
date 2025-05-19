@@ -3,17 +3,35 @@ from typing import Callable
 from generator.codewriter import CodeWriter
 
 
-def with_attribute(out: CodeWriter, owner, attribute_name, action):
-    (MacroCall('with_attribute',
-              owner,
-              quote(attribute_name),
-              'python_value',
-              action)
-     .writeln(out))
+def with_attribute(owner, attribute_name, action):
+    return MacroCall(
+        'with_attribute',
+        owner,
+        quote(attribute_name),
+        'python_value',
+        action)
+
+
+def with_int64_attribute(owner, attribute_name, action):
+    return MacroCall(
+        'with_attribute',
+        owner,
+        quote(attribute_name),
+        'python_value',
+        with_int64(
+            'python_value',
+            action))
+
+
+def with_int64(value_name, action):
+    return MacroCall(
+        'with_pylong_as_int64',
+        value_name,
+        action)
 
 
 class MacroCall:
-    def __init__(self, name: str, *arguments: str | type('MacroCall') | Callable[[CodeWriter], None]):
+    def __init__(self, name: str, *arguments: type(str) | type('MacroCall') | Callable[[CodeWriter], None]):
         self.name = name
         self.arguments = list(arguments)
 
