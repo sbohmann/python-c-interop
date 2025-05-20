@@ -1,6 +1,6 @@
 import typing
 
-from generator.attributes import with_attribute, with_int64, with_int64_attribute
+from generator.attributes import with_attribute, with_int64, with_int64_attribute, MacroCall, quote
 from generator.codewriter import CodeWriter, CodeWriterMode
 from model.model import Module, Type, PrimitiveType, Struct, Enumeration
 
@@ -72,22 +72,21 @@ class CPythonConversionGenerator:
         def write_body(out):
             out.writeln('struct ', struct.name, ' result = {};')
             for field in struct.fields:
-                if field.type is Struct:
+                if type(field.type) is Struct or type(field.type) is Enumeration:
                     out.writeln('result.', field.name, ' = ', field.type.name, '_to_c(python_struct.', field.name, ')')
-                elif field.type is Enumeration:
-                    out.writeln('result.', field.name, ' = ', field.type.name, '_to_c(python_struct.', field.name, ')')
-                (with_int64_attribute(
-                    'python_struct',
-                    field.name,
-                    'result.' + field.name + ' = value')
-                 .writeln(out))
+                else:
+                    (with_int64_attribute(
+                        'python_struct',
+                        field.name,
+                        'result.' + field.name + ' = value')
+                     .writeln(out))
             out.writeln('return result;')
 
         self._code.block(write_body, ';')
         self._code.writeln()
 
     def _write_struct_c_to_python_conversion(self, struct):
-        signature = 'PyObject * ' + struct.name + '_to_python(struct ' + struct.name + ' value)'
+        signature = 'PyObject * ' + struct.name + '_to_python(struct ' + struct.name + ' c_struct)'
         self._header.writeln(signature, ';')
         self._code.write(signature, ' ')
 
@@ -98,9 +97,25 @@ class CPythonConversionGenerator:
             out.block(lambda: out.writeln(
                 'fail_with_message("Unable to instantiate struct ', struct.name, ');'))
             for field in struct.fields:
-                out.write('if (PyObject_SetAttrString(target, attribute_name, python_value) != 0) ')
-                out.block(lambda: out.writeln('fail_with_message("Failed to set attribute ["', field.name, '"]");'))
-                out.writeln('return result;')
+                if type(field.type) is Struct or type(field.type) is Enumeration:
+                    (MacroCall(
+                        'set_python_attribute',
+                        'result',
+                        quote(field.name),
+                        field.type.name + '_to_c(c_struct.' + field.name + ')')
+                     .writeln(out))
+                else:
+                    (MacroCall(
+                        'with_int64_as_pylong',
+                        'c_struct.' + field.name,
+                        'value',
+                        MacroCall(
+                            'set_python_attribute',
+                            'result',
+                            quote(field.name),
+                            'value'))
+                     .writeln(out))
+            out.writeln('return result;')
 
         self._code.block(write_body, ';')
         self._code.writeln()
