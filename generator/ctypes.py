@@ -1,6 +1,6 @@
 import typing
 
-from model.model import Type, PrimitiveType, Struct, Enumeration
+from model.model import Type, PrimitiveType, Struct, Enumeration, List
 
 
 class CTypes:
@@ -15,19 +15,19 @@ class CTypes:
             elif primitive is PrimitiveType.Integer or primitive is PrimitiveType.Int64:
                 return 'int64_t'
             elif primitive is PrimitiveType.UInt64:
-                return 'unt64_t'
+                return 'uint64_t'
             elif primitive is PrimitiveType.Integer or primitive is PrimitiveType.Int32:
                 return 'int32_t'
             elif primitive is PrimitiveType.UInt32:
-                return 'unt32_t'
+                return 'uint32_t'
             elif primitive is PrimitiveType.Integer or primitive is PrimitiveType.Int16:
                 return 'int16_t'
             elif primitive is PrimitiveType.UInt16:
-                return 'unt16_t'
+                return 'uint16_t'
             elif primitive is PrimitiveType.Integer or primitive is PrimitiveType.Int8:
                 return 'int8_t'
             elif primitive is PrimitiveType.UInt8:
-                return 'unt8_t'
+                return 'uint8_t'
             elif primitive is PrimitiveType.Float:
                 return 'float'
             elif primitive is PrimitiveType.Double:
@@ -46,4 +46,8 @@ class CTypes:
                     return t.name
                 else:
                     return 'enum ' + t.name
+            elif type(t) is List:
+                list_type = typing.cast(List, t)
+                if list_type.maximum_length is not None:
+                    return f'{list_type.element_type.name}', f'[{list_type.maximum_length}]'
         raise ValueError("Unsupported type " + t.name)

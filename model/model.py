@@ -93,9 +93,14 @@ class Enumeration(Type):
 
 
 class List(Type):
-    def __init__(self, name: str, element_type: Type):
-        self.name = name
+    def __init__(self, element_type: Type, maximum_length: Constant = None):
+        super().__init__(f'List[{element_type.name}]')
+        self.element_type = element_type
         self.type_arguments = [element_type]
+        if maximum_length is not None:
+            if maximum_length.type is not PrimitiveType.Integer:
+                raise ValueError(f'Unsupported list maximum length type: ${maximum_length.type}')
+            self.maximum_length: str = maximum_length.name
 
 
 class Set(Type):

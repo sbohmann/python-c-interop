@@ -46,7 +46,11 @@ class CHeaderGenerator:
             self._out.write('struct ', struct.name, ' ')
         def write_struct_body():
             for field in struct.fields:
-                self._out.writeln(self._ctypes.for_type(field.type), ' ', field.name, ';')
+                c_type = self._ctypes.for_type(field.type)
+                if type(c_type) is tuple:
+                    self._out.writeln(c_type[0], ' ', field.name, c_type[1], ';')
+                else:
+                    self._out.writeln(c_type, ' ', field.name, ';')
         if struct.typedef:
             self._out.block(write_struct_body, ' ' + struct.name + ';')
         else:

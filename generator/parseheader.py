@@ -1,9 +1,9 @@
 import re
-import os
-from typing import Dict, List, Union, Optional
 from dataclasses import dataclass
+from typing import List, Optional
+
 from codewriter import CodeWriter
-from generator.codewriter import CodeWriterMode
+from codewriter import CodeWriterMode
 
 
 @dataclass
@@ -151,53 +151,70 @@ class HeaderParser:
     def generate_module(self, output_path: str) -> None:
         """Generate Python module from parsed header."""
         writer = CodeWriter(CodeWriterMode.Python)
+        
+        # Import statements
+        writer.writeln("from dataclasses import dataclass")
+        writer.writeln("from typing import Dict, List, Union, Optional")
+        writer.writeln("from enum import IntEnum")
+        writer.writeln()
 
-        # Write constants
-        if self.constants:
-            writer.write_line("# Constants")
-            for const in self.constants:
-                if const.comment:
-                    writer.write_line(f"# {const.comment}")
-                writer.write_line(f"{const.name} = {const.value}")
-            writer.write_line("")
+        for const in self.constants:
+            if const.comment:
+                writer.writeln("# ", const.comment)
+            writer.writeln(const.name, " = ", const.value)
+            writer.writeln()
 
-        # Write enums
-        if self.enums:
-            writer.write_line("from enum import IntEnum")
-            writer.write_line("")
+        for enum in self.enums:
+            if enum.comment:
+                writer.writeln("# ", enum.comment)
+            writer.write("class ", enum.name, "(IntEnum):")
+        
+            def write_enum_body():
+                for member in enum.members:
+                    if member.comment:
+                        writer.writeln("# ", member.comment)
+                    writer.writeln(member.name, " = ", member.value)
+        
+            writer.block(write_enum_body)
+            writer.writeln()
 
-            for enum in self.enums:
-                if enum.comment:
-                    writer.write_line(f"# {enum.comment}")
-                writer.write_line(f"class {enum.name}(IntEnum):")
-                with writer.indent():
-                    for member in enum.members:
-                        if member.comment:
-                            writer.write_line(f"# {member.comment}")
-                        writer.write_line(f"{member.name} = {member.value}")
-                writer.write_line("")
+        for struct in self.structs:
+            if struct.comment:
+                writer.writeln("# ", struct.comment)
+            writer.writeln("@dataclass")
+            writer.write("class ", struct.name, ":")
+        
+            def write_struct_body():
+                for member in struct.members:
+                    if member.comment:
+                        writer.writeln("# ", member.comment)
+                    writer.writeln(member.name, ": ", self._get_python_type(member.type))
+        
+            writer.block(write_struct_body)
+            writer.writeln()
 
-        # Write structs
-        if self.structs:
-            writer.write_line("from dataclasses import dataclass")
-            writer.write_line("from typing import Any")
-            writer.write_line("")
+        # Write output
+        with open(output_path, 'w') as outputFile:
+            outputFile.write(writer.result())
 
-            for struct in self.structs:
-                if struct.comment:
-                    writer.write_line(f"# {struct.comment}")
-                writer.write_line("@dataclass")
-                writer.write_line(f"class {struct.name}:")
-                with writer.indent():
-                    for member in struct.members:
-                        if member.comment:
-                            writer.write_line(f"# {member.comment}")
-                        writer.write_line(f"{member.name}: Any  # type: {member.type}")
-                writer.write_line("")
-
-        # Save to file
-        with open(output_path, 'w') as f:
-            f.write(writer.get_value())
+    def _get_python_type(self, c_type: str) -> str:
+        """Convert C type to Python type annotation."""
+        type_map = {
+            'bool': 'bool',
+            'char': 'int',
+            'unsigned char': 'int',
+            'short': 'int',
+            'unsigned short': 'int',
+            'int': 'int',
+            'unsigned int': 'int',
+            'long': 'int',
+            'unsigned long': 'int',
+            'float': 'float',
+            'double': 'float',
+            'char*': 'str',
+            'void*': 'Any'
+        }
+        return type_map.get(c_type, 'Any')  # Default to Any for unknown types
 
 
 def parse_header(header_path: str, output_path: str) -> None:
@@ -217,6 +234,21 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) != 3:
-        print("Usage: python hsmlib.py <header_file> <output_file>")
+        print("Usage: python parseheader.py <header_file> <output_file>")
         sys.exit(1)
     parse_header(sys.argv[1], sys.argv[2])
+
+
+def generate_something(writer: CodeWriter, class_name: str, fields: list[str]):
+    # CodeWriter with comma separation for generated code
+    writer.writeln("class ", class_name, ":")
+    
+    def write_body():
+        for field in fields:
+            # f-string for the comment because it's not part of the generated code
+            debug_info = f"Adding field: {field}"
+            print(debug_info)  # or logger.debug(debug_info)
+            
+            writer.writeln(field, ": str = ''")
+    
+    writer.block(write_body)
