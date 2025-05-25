@@ -3,15 +3,21 @@ from generator.c_python_conversion_generator import CPythonConversionGenerator
 from generator.pyi_generator import PythonModuleInformationGenerator
 from model.model import Module, Enumeration, Struct, Field, PrimitiveType
 
-colorEnum = Enumeration('Color', 'Red', 'Green', 'Blue')
+colorEnum = Enumeration(
+    'Color',
+    'Red',
+    'Green',
+    'Blue')
+
+car = Struct(
+    'Car',
+    Field('color', colorEnum),
+    Field('x', PrimitiveType.UInt16))
 
 module = Module(
     'tiny',
     colorEnum,
-    Struct(
-        'Car',
-        Field('color', colorEnum),
-    Field('x', PrimitiveType.UInt16)))
+    car)
 
 pythonGenerator = PythonModuleInformationGenerator(module)
 pythonGenerator.run()

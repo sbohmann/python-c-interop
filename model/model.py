@@ -1,5 +1,6 @@
 import typing
 from abc import abstractmethod
+from lib2to3.pgen2.tokenize import double3prog
 
 
 class Type:
@@ -48,6 +49,23 @@ PrimitiveType.Double = PrimitiveType('Double')
 PrimitiveType.String = PrimitiveType('String')
 
 
+class Constant:
+    def __init__(self, name: str, value):
+        self.name = name
+        self.type = type
+        if type(value) is int:
+            self.type = PrimitiveType.Integer
+        elif type(value) is bool:
+            self.type = PrimitiveType.Boolean
+        elif type(value) is float:
+            self.type = PrimitiveType.Double
+        elif type(value) is str:
+            self.type = PrimitiveType.String
+        else:
+            raise ValueError("Unsupported constant type: " + str(type(value)))
+        self.value = value
+
+
 class Field:
     def __init__(self, name: str, type_: Type):
         self.name: str = name
@@ -55,21 +73,23 @@ class Field:
 
 
 class Struct(Type):
-    fields: list[Field]
-
-    def __init__(self, name: str, *fields: Field):
+    def __init__(self, name: str, *fields: Field, typedef=False):
         super().__init__(name)
+        self.fields: list[Field]
+        self.typedef = typedef
         if len(fields) == 0:
             raise ValueError("No fields provided")
         self.fields = list(fields)
 
 
 class Enumeration(Type):
-    def __init__(self, name: str, *values: str):
+    def __init__(self, name: str, *values: str, first_ordinal: int = 1, typedef: bool = False) -> None:
         super().__init__(name)
         if len(values) == 0:
             raise ValueError("No values provided")
         self.values: list[str] = list(values)
+        self.typedef = typedef
+        self.first_ordinal = first_ordinal
 
 
 class List(Type):
