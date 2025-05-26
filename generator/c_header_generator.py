@@ -114,9 +114,9 @@ class PascalToCCase:
         self.handle_character(None)
 
         # TODO better algorithm
-        # self.result = self.result.replace('__', '_')
-        # if self.result[0] == '_':
-        #     self.result = self.result[1:]
+        self.result = self.result.replace('__', '_')
+        if self.result[0] == '_':
+            self.result = self.result[1:]
 
     def handle_character(self, c: str | None):
         if c is None:
@@ -142,103 +142,3 @@ class PascalToCCase:
             else:
                 self.result += self.previousCharacter.lower()
         self.previousCharacter = c
-
-
-# class PascalToCCase:
-#     def __init__(self, text: str):
-#         self.text = text
-#         self.words = []
-#         self.current_word = []
-#
-#         for i, c in enumerate(text):
-#             if c == '_':
-#                 if self.current_word:
-#                     self.words.append(''.join(self.current_word))
-#                     self.current_word = []
-#             elif c.isupper():
-#                 # Look ahead to check if this is part of an acronym
-#                 next_is_lower = (i + 1 < len(text) and text[i + 1].islower())
-#                 prev_is_lower = (self.current_word and self.current_word[-1].islower())
-#
-#                 if prev_is_lower or next_is_lower:
-#                     # Start of new word
-#                     if self.current_word:
-#                         self.words.append(''.join(self.current_word))
-#                     self.current_word = [c]
-#                 else:
-#                     # Part of an acronym
-#                     self.current_word.append(c)
-#             else:
-#                 self.current_word.append(c)
-#
-#         if self.current_word:
-#             self.words.append(''.join(self.current_word))
-#
-#         self.result = '_'.join(word.lower() for word in self.words if word)
-
-# class PascalToCCase:
-#     def __init__(self, text: str):
-#         self.text = text
-#         self.words = []
-#         self.current_word = []
-#
-#         for i, c in enumerate(text):
-#             if c == '_':
-#                 if self.current_word:
-#                     self.words.append(''.join(self.current_word))
-#                 self.current_word = []
-#                 self.words.append('_')
-#             elif c.isdigit():
-#                 # Handle numbers as separate words
-#                 if self.current_word:
-#                     self.words.append(''.join(self.current_word))
-#                     self.current_word = []
-#                 self.words.append(c)
-#             elif c.isupper():
-#                 # Look ahead to check if this is part of an acronym
-#                 next_is_lower = (i + 1 < len(text) and text[i + 1].islower())
-#                 prev_is_lower = (self.current_word and self.current_word[-1].islower())
-#
-#                 if prev_is_lower or next_is_lower:
-#                     # Start of new word
-#                     if self.current_word:
-#                         self.words.append(''.join(self.current_word))
-#                     self.current_word = [c]
-#                 else:
-#                     # Part of an acronym
-#                     self.current_word.append(c)
-#             else:
-#                 self.current_word.append(c)
-#
-#         if self.current_word:
-#             self.words.append(''.join(self.current_word))
-#
-#         # Convert to lowercase and join, preserving explicit underscores
-#         self.result = ''
-#         for i, word in enumerate(self.words):
-#             if word == '_':
-#                 self.result += '_'
-#             else:
-#                 if i > 0 and self.words[i - 1] != '_' and word != '_':
-#                     self.result += '_'
-#                 self.result += word.lower()
-
-def show(before, after):
-    print(before)
-    print('    ' + after)
-
-
-show("XMLTutorial", PascalToCCase("XMLTutorial").result)
-show("this_is_AnXMLTutorial", PascalToCCase("this_is_AnXMLTutorial").result)
-show("This_isAnXMLTutorial", PascalToCCase("This_isAnXMLTutorial").result)
-show("this_isAn_XMLTutorial", PascalToCCase("this_isAn_XMLTutorial").result)
-show("this_isAnXML_Tutorial", PascalToCCase("this_isAnXML_Tutorial").result)
-show("this_isAn_XML_tutorial", PascalToCCase("this_isAn_XML_tutorial").result)
-show("this_isAnXMLT9.17tutorial_", PascalToCCase("this_isAnXMLT9.17tutorial_").result)
-show("XMLTutorial", PascalToCCase("XMLTutorial").result)         # xml_tutorial
-show("this_isAnXMLTutorial", PascalToCCase("this_isAnXMLTutorial").result)  # this_is_an_xml_tutorial
-show("getXMLParser", PascalToCCase("getXMLParser").result)        # get_xml_parser
-show("SimpleXML_", PascalToCCase("SimpleXML_").result)          # simple_xml_
-show("Parse2XML", PascalToCCase("Parse2XML").result)           # parse_2_xml
-show("Class_", PascalToCCase("Class_").result)              # class_
-show("Class__Name", PascalToCCase("Class__Name").result)         # class__name
