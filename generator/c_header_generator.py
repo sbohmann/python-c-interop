@@ -113,10 +113,10 @@ class PascalToCCase:
             self.handle_character(c)
         self.handle_character(None)
 
-        # TODO beter algorithm
-        self.result = self.result.replace('__', '_')
-        if self.result[0] == '_':
-            self.result = self.result[1:]
+        # TODO better algorithm
+        # self.result = self.result.replace('__', '_')
+        # if self.result[0] == '_':
+        #     self.result = self.result[1:]
 
     def handle_character(self, c: str | None):
         if c is None:
@@ -125,13 +125,22 @@ class PascalToCCase:
             if c.isupper():
                 if self.previousCharacter.isupper():
                     self.result += self.previousCharacter.lower()
-                else:
+                elif self.previousCharacter.islower():
                     self.result += self.previousCharacter + '_'
-            else:
+                else:
+                    self.result += self.previousCharacter
+            elif c.islower():
                 if self.previousCharacter.isupper():
-                    self.result += '_' + self.previousCharacter.lower()
+                    if len(self.result) > 0:
+                        self.result += '_' + self.previousCharacter.lower()
+                    else:
+                        self.result += self.previousCharacter.lower()
+                elif self.previousCharacter.islower():
+                    self.result += self.previousCharacter
                 else:
                     self.result += self.previousCharacter.lower()
+            else:
+                self.result += self.previousCharacter.lower()
         self.previousCharacter = c
 
 
