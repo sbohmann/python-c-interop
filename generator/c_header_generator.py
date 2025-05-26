@@ -1,5 +1,5 @@
 from generator.codewriter import CodeWriter, CodeWriterMode
-from generator.ctypes import CTypes
+from generator.ctypes import CTypes, PascalToCCase
 from model.model import Module
 
 
@@ -60,7 +60,7 @@ class CHeaderGenerator:
             for field in struct.fields:
                 c_type = self._ctypes.for_type(field.type)
                 if type(c_type) is tuple:
-                    self._out.write(c_type[0], ' ', field.name, c_type[1], ';')
+                    self._out.write(PascalToCCase(c_type[0]).result, ' ', field.name, c_type[1], ';')
                 else:
                     self._out.write(c_type, ' ', field.name, ';')
                 if field.comment:
@@ -100,45 +100,3 @@ def escape(text: str) -> str:
         '\v': '\\v'
     }
     return ''.join(escapes.get(c, c) for c in text)
-
-
-class PascalToCCase:
-    def __init__(self, text: str):
-        self.text = text
-        self.result = ''
-        self.inside_uppercase_group = False
-        self.previousCharacter = None
-
-        for c in self.text:
-            self.handle_character(c)
-        self.handle_character(None)
-
-        # TODO better algorithm
-        self.result = self.result.replace('__', '_')
-        if self.result[0] == '_':
-            self.result = self.result[1:]
-
-    def handle_character(self, c: str | None):
-        if c is None:
-            self.result += self.previousCharacter.lower()
-        elif self.previousCharacter is not None:
-            if c.isupper():
-                if self.previousCharacter.isupper():
-                    self.result += self.previousCharacter.lower()
-                elif self.previousCharacter.islower():
-                    self.result += self.previousCharacter + '_'
-                else:
-                    self.result += self.previousCharacter
-            elif c.islower():
-                if self.previousCharacter.isupper():
-                    if len(self.result) > 0:
-                        self.result += '_' + self.previousCharacter.lower()
-                    else:
-                        self.result += self.previousCharacter.lower()
-                elif self.previousCharacter.islower():
-                    self.result += self.previousCharacter
-                else:
-                    self.result += self.previousCharacter.lower()
-            else:
-                self.result += self.previousCharacter.lower()
-        self.previousCharacter = c

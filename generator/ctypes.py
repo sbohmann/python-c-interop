@@ -38,16 +38,58 @@ class CTypes:
             # TODO import if necessary
             if type(t) is Struct:
                 if typing.cast(Struct, t).typedef:
-                    return t.name
+                    return PascalToCCase(t.name).result
                 else:
-                    return 'struct ' + t.name
+                    return 'struct ' + PascalToCCase(t.name).result
             elif type(t) is Enumeration:
                 if typing.cast(Enumeration, t).typedef:
-                    return t.name
+                    return PascalToCCase(t.name).result
                 else:
-                    return 'enum ' + t.name
+                    return 'enum ' + PascalToCCase(t.name).result
             elif type(t) is List:
                 list_type = typing.cast(List, t)
                 if list_type.maximum_length is not None:
                     return f'{list_type.element_type.name}', f'[{list_type.maximum_length}]'
         raise ValueError("Unsupported type " + t.name)
+
+
+class PascalToCCase:
+    def __init__(self, text: str):
+        self.text = text
+        self.result = ''
+        self.inside_uppercase_group = False
+        self.previousCharacter = None
+
+        for c in self.text:
+            self.handle_character(c)
+        self.handle_character(None)
+
+        # TODO better algorithm
+        self.result: str  = self.result.replace('__', '_')
+        if self.result[0] == '_':
+            self.result = self.result[1:]
+
+    def handle_character(self, c: str | None):
+        if c is None:
+            self.result += self.previousCharacter.lower()
+        elif self.previousCharacter is not None:
+            if c.isupper():
+                if self.previousCharacter.isupper():
+                    self.result += self.previousCharacter.lower()
+                elif self.previousCharacter.islower():
+                    self.result += self.previousCharacter + '_'
+                else:
+                    self.result += self.previousCharacter
+            elif c.islower():
+                if self.previousCharacter.isupper():
+                    if len(self.result) > 0:
+                        self.result += '_' + self.previousCharacter.lower()
+                    else:
+                        self.result += self.previousCharacter.lower()
+                elif self.previousCharacter.islower():
+                    self.result += self.previousCharacter
+                else:
+                    self.result += self.previousCharacter.lower()
+            else:
+                self.result += self.previousCharacter.lower()
+        self.previousCharacter = c
