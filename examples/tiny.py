@@ -1,6 +1,6 @@
 from generator.c_header_generator import CHeaderGenerator
 from generator.c_python_conversion_generator import CPythonConversionGenerator
-from generator.pyi_generator import PythonModuleInformationGenerator
+from generator.python_model_generator import PythonModuleGenerator
 from model.model import Module, Enumeration, Struct, Field, PrimitiveType
 
 colorEnum = Enumeration(
@@ -19,7 +19,7 @@ module = Module(
     colorEnum,
     car)
 
-pythonGenerator = PythonModuleInformationGenerator(module)
+pythonGenerator = PythonModuleGenerator(module)
 pythonGenerator.run()
 print(pythonGenerator.result())
 

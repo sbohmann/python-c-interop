@@ -67,29 +67,32 @@ class Constant:
 
 
 class Field:
-    def __init__(self, name: str, type_: Type):
+    def __init__(self, name: str, t: Type, comment: str = None):
         self.name: str = name
-        self.type: Type = type_
+        self.type: Type = t
+        self.comment: str = comment
 
 
 class Struct(Type):
-    def __init__(self, name: str, *fields: Field, typedef=False):
+    def __init__(self, name: str, *fields: Field, typedef=False, typedef_postfix: str = 't'):
         super().__init__(name)
         self.fields: list[Field]
         self.typedef = typedef
         if len(fields) == 0:
             raise ValueError("No fields provided")
         self.fields = list(fields)
+        self.typedef_postfix = typedef_postfix
 
 
 class Enumeration(Type):
-    def __init__(self, name: str, *values: str, first_ordinal: int = 1, typedef: bool = False) -> None:
+    def __init__(self, name: str, *values: str, first_ordinal: int = 1, typedef: bool = False, typedef_postfix: str = 'e') -> None:
         super().__init__(name)
         if len(values) == 0:
             raise ValueError("No values provided")
         self.values: list[str] = list(values)
-        self.typedef = typedef
         self.first_ordinal = first_ordinal
+        self.typedef = typedef
+        self.typedef_postfix = typedef_postfix
 
 
 class List(Type):
@@ -105,32 +108,37 @@ class List(Type):
 
 class Set(Type):
     def __init__(self, name: str, element_type: Type):
+        super().__init__(f'Set[{element_type.name}]')
         self.name = name
         self.type_arguments = [element_type]
 
 
 class Map(Type):
     def __init__(self, name: str, key_type: Type, value_type: Type):
+        super().__init__(f'Map[{element_type.name}]')
         self.name = name
         self.type_arguments = [key_type, value_type]
 
 
 class Module:
-    def __init__(self, name: str, *types: Type):
+    def __init__(self, name: str, *content: Constant | Type):
         self.name: str = name
+        self.constants: list[Constant] = []
         self.structs: list[Struct] = []
         self.structForName: dict[str, Struct] = dict()
         self.enums: list[Enumeration] = []
         self.enumForName: dict[str, Enumeration] = dict()
 
-        for t in types:
-            if type(t) is Struct:
-                self.structs.append(typing.cast(Struct, t))
-            elif type(t) is Enumeration:
-                self.enums.append(typing.cast(Enumeration, t))
+        for item in content:
+            if type(item) is Constant:
+                self.constants.append(typing.cast(Constant, item))
+            elif type(item) is Struct:
+                self.structs.append(typing.cast(Struct, item))
+            elif type(item) is Enumeration:
+                self.enums.append(typing.cast(Enumeration, item))
             else:
                 raise ValueError("Attempting to add a type of kind "
-                                 + str(type(t))
+                                 + str(type(item))
                                  + " to module " + self.name)
 
 
