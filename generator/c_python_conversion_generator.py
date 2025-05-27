@@ -157,6 +157,7 @@ class CPythonConversionGenerator:
                     def write_block():
                         out.writeln(f'{self.ctypes.for_type(field.type.type_arguments[0])} item = c_struct.{field.name}[index];')
                         # TODO add to python list
+                    # TODO set python attribute
                     out.block(write_block)
                 else:
                     # TODO implement the missing types
