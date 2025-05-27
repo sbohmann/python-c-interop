@@ -1,11 +1,19 @@
+from enum import Enum
+
 from generator.codewriter import CodeWriter, CodeWriterMode
 from generator.ctypes import CTypes, PascalToCCase
 from model.model import Module
 
 
+class Style(Enum):
+    Knr = 1
+    Bsd = 2
+
+
 class CHeaderGenerator:
-    def __init__(self, module: Module):
+    def __init__(self, module: Module, style=Style.Knr):
         self.module = module
+        self._style = style
         self._out = CodeWriter(CodeWriterMode.C)
         self._ctypes = CTypes()
 
@@ -29,9 +37,9 @@ class CHeaderGenerator:
 
     def _write_enum(self, enum):
         if enum.typedef:
-            self._out.write('typedef enum ')
+            self._before_block('typedef enum')
         else:
-            self._out.write('enum ', PascalToCCase(enum.name).result, ' ')
+            self._before_block('enum ', PascalToCCase(enum.name).result)
 
         def write_enum_body():
             ordinal = enum.first_ordinal
@@ -52,9 +60,9 @@ class CHeaderGenerator:
 
     def _write_struct(self, struct):
         if struct.typedef:
-            self._out.write('typedef struct ')
+            self._before_block('typedef struct')
         else:
-            self._out.write('struct ', PascalToCCase(struct.name), ' ')
+            self._before_block('struct ', PascalToCCase(struct.name))
 
         def write_struct_body():
             for field in struct.fields:
@@ -77,6 +85,14 @@ class CHeaderGenerator:
         else:
             self._out.block(write_struct_body, ';')
         self._out.writeln()
+
+    def _before_block(self, *values):
+        if self._style is Style.Knr:
+            self._out.write(*values, ' ')
+        elif self._style == Style.Bsd:
+            self._out.writeln(*values)
+        else:
+            raise ValueError(f"Unknown style [{str(self._style)}]")
 
 
 def postfix(type):

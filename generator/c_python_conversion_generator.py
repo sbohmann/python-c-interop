@@ -1,7 +1,7 @@
 from generator.attributes import with_int64_attribute, MacroCall, quote
 from generator.codewriter import CodeWriter, CodeWriterMode
 from generator.ctypes import CTypes
-from model.model import Module, Struct, Enumeration
+from model.model import Module, Struct, Enumeration, PrimitiveType
 
 
 class CPythonConversionGenerator:
@@ -73,12 +73,15 @@ class CPythonConversionGenerator:
             for field in struct.fields:
                 if type(field.type) is Struct or type(field.type) is Enumeration:
                     out.writeln('result.', field.name, ' = ', field.type.name, '_to_c(python_struct.', field.name, ')')
-                else:
+                elif type(field.type) is PrimitiveType and field.type.is_integer:
                     (with_int64_attribute(
                         'python_struct',
                         field.name,
                         'result.' + field.name + ' = value')
                      .writeln(out))
+                else:
+                    # TODO implement the missing types
+                    raise ValueError(f'Unsupported type [{field.type.name}] of field [{struct.name}.{field.name}]')
             out.writeln('return result;')
 
         self._code.block(write_body, ';')
@@ -103,7 +106,7 @@ class CPythonConversionGenerator:
                         quote(field.name),
                         field.type.name + '_to_c(c_struct.' + field.name + ')')
                      .writeln(out))
-                else:
+                elif type(field.type) is PrimitiveType and field.type.is_integer:
                     (MacroCall(
                         'with_int64_as_pylong',
                         'c_struct.' + field.name,
@@ -114,6 +117,9 @@ class CPythonConversionGenerator:
                             quote(field.name),
                             'value'))
                      .writeln(out))
+                else:
+                    # TODO implement the missing types
+                    raise ValueError(f'Unsupported type [{field.type.name}] of field [{struct.name}.{field.name}]')
             out.writeln('return result;')
 
         self._code.block(write_body, ';')
