@@ -1,3 +1,4 @@
+import re
 import typing
 
 from model.model import Type, PrimitiveType, Struct, Enumeration, List
@@ -54,6 +55,8 @@ class CTypes:
 
 
 class PascalToCCase:
+    _multiple_underscores = re.compile(r'_+')
+
     def __init__(self, text: str):
         self.text = text
         self.result = ''
@@ -64,8 +67,7 @@ class PascalToCCase:
             self.handle_character(c)
         self.handle_character(None)
 
-        # TODO better algorithm
-        self.result: str  = self.result.replace('__', '_')
+        self.result: str  = self._multiple_underscores.sub('_', self.result)
         if self.result[0] == '_':
             self.result = self.result[1:]
 

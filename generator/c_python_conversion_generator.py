@@ -1,7 +1,7 @@
 from generator.attributes import with_int64_attribute, MacroCall, quote
 from generator.codewriter import CodeWriter, CodeWriterMode
 from generator.ctypes import CTypes
-from model.model import Module, Struct, Enumeration, PrimitiveType
+from model.model import Module, Struct, Enumeration, PrimitiveType, List
 
 
 class CPythonConversionGenerator:
@@ -74,6 +74,7 @@ class CPythonConversionGenerator:
                 if type(field.type) is Struct or type(field.type) is Enumeration:
                     out.writeln('result.', field.name, ' = ', field.type.name, '_to_c(python_struct.', field.name, ')')
                 elif type(field.type) is PrimitiveType and field.type.is_integer:
+                    # TODO check value range! So easy to breach them from the pytho side ^^
                     (with_int64_attribute(
                         'python_struct',
                         field.name,
@@ -117,6 +118,46 @@ class CPythonConversionGenerator:
                             quote(field.name),
                             'value'))
                      .writeln(out))
+                elif field.type is PrimitiveType.Boolean:
+                    (MacroCall(
+                        'with_pybool',
+                        'c_struct.' + field.name,
+                        'value',
+                        MacroCall(
+                            'set_python_attribute',
+                            'result',
+                            quote(field.name),
+                            'value'))
+                     .writeln(out))
+                elif type(field.type) is PrimitiveType and field.type in [PrimitiveType.Float, PrimitiveType.Double]:
+                    (MacroCall(
+                        'with_double_as_pyfloat',
+                        'c_struct.' + field.name,
+                        'value',
+                        MacroCall(
+                            'set_python_attribute',
+                            'result',
+                            quote(field.name),
+                            'value'))
+                     .writeln(out))
+                elif type(field.type) is PrimitiveType and field.type is PrimitiveType.String:
+                    (MacroCall(
+                        'with_string_as_pystring',
+                        'c_struct.' + field.name,
+                        'value',
+                        MacroCall(
+                            'set_python_attribute',
+                            'result',
+                            quote(field.name),
+                            'value'))
+                     .writeln(out))
+                elif type(field.type) is List:
+                    # TODO create python list
+                    out.writeln(f'for (size_t index = 0; index < ...; ++index) ')
+                    def write_block():
+                        out.writeln(f'{self.ctypes.for_type(field.type.type_arguments[0])} item = c_struct.{field.name}[index];')
+                        # TODO add to python list
+                    out.block(write_block)
                 else:
                     # TODO implement the missing types
                     raise ValueError(f'Unsupported type [{field.type.name}] of field [{struct.name}.{field.name}]')
