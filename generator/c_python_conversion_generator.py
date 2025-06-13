@@ -1,4 +1,4 @@
-from generator.attributes import with_int64_attribute, MacroCall, quote
+from generator.attributes import with_int64_attribute, MacroCall, quote, with_list_attribute, with_float_attribute
 from generator.codewriter import CodeWriter, CodeWriterMode
 from generator.ctypes import CTypes
 from model.model import Module, Struct, Enumeration, PrimitiveType, List
@@ -74,11 +74,23 @@ class CPythonConversionGenerator:
                 if type(field.type) is Struct or type(field.type) is Enumeration:
                     out.writeln('result.', field.name, ' = ', field.type.name, '_to_c(python_struct.', field.name, ')')
                 elif type(field.type) is PrimitiveType and field.type.is_integer:
-                    # TODO check value range! So easy to breach them from the pytho side ^^
+                    # TODO check value range! So easy to breach them from the python side ^^
                     (with_int64_attribute(
                         'python_struct',
                         field.name,
                         'result.' + field.name + ' = value')
+                     .writeln(out))
+                elif type(field.type) is PrimitiveType and field.type in [PrimitiveType.Float, PrimitiveType.Double]:
+                    (with_float_attribute(
+                        'python_struct',
+                        field.name,
+                        'result.' + field.name + ' = value')
+                     .writeln(out))
+                elif type(field.type) is List:
+                    (with_list_attribute(
+                        'python_struct',
+                        field.name,
+                        f'result.{field.name}[item.index] = item.value')
                      .writeln(out))
                 else:
                     # TODO implement the missing types
