@@ -23,7 +23,7 @@ class CPythonConversionGenerator:
         return self._header.result(), self._code.result()
 
     def _write_enum_python_to_c_conversion(self, enum):
-        signature = 'struct ' + enum.name + '_to_c(const PyObject *python_enum)'
+        signature = 'enum ' + enum.name + ' ' + enum.name + '_to_c(const PyObject *python_enum)'
         self._header.writeln(signature, ';')
         self._code.write(signature, ' ')
 
