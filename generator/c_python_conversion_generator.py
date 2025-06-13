@@ -129,7 +129,7 @@ class CPythonConversionGenerator:
                             quote(field.name),
                             'value'))
                      .writeln(out))
-                elif type(field.type) is PrimitiveType and field.type in [PrimitiveType.Float, PrimitiveType.Double]:
+                elif field.type in [PrimitiveType.Float, PrimitiveType.Double]:
                     (MacroCall(
                         'with_double_as_pyfloat',
                         'c_struct.' + field.name,
@@ -140,7 +140,7 @@ class CPythonConversionGenerator:
                             quote(field.name),
                             'value'))
                      .writeln(out))
-                elif type(field.type) is PrimitiveType and field.type is PrimitiveType.String:
+                elif field.type is PrimitiveType.String:
                     (MacroCall(
                         'with_string_as_pystring',
                         'c_struct.' + field.name,
