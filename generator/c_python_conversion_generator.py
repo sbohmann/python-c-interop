@@ -54,7 +54,9 @@ class CPythonConversionGenerator:
         self._code.write(signature, ' ')
 
         def write_body(out):
-            out.writeln('static PyObject *enum_class = load_class("', self.module.name, '", "', enum.name, '");')
+            out.writeln('static PyObject *enum_class = nullptr;')
+            out.write('if (enum_class == nullptr) ')
+            out.block(lambda: out.writeln('load_class("', self.module.name, '", "', enum.name, '");'))
             out.writeln('PyObject *result = PyObject_CallFunction(enum_class, "i", value);')
             out.write('if (result == NULL) ')
             out.block(lambda: out.writeln(
@@ -111,7 +113,9 @@ class CPythonConversionGenerator:
         self._code.write(signature, ' ')
 
         def write_body(out):
-            out.writeln('static PyObject *struct_class = load_class("', self.module.name, '", "', struct.name, '");')
+            out.writeln('static PyObject *struct_class = nullptr;')
+            out.write('if (struct_class == nullptr) ')
+            out.block(lambda: out.writeln('load_class("', self.module.name, '", "', struct.name, '");'))
             out.writeln('PyObject *result = PyObject_CallFunction(struct_class, "");')
             out.write('if (result == NULL) ')
             out.block(lambda: out.writeln(
@@ -170,7 +174,7 @@ class CPythonConversionGenerator:
                      .writeln(out))
                 elif type(field.type) is List:
                     # TODO create python list
-                    out.writeln(f'for (size_t index = 0; index < ...; ++index) ')
+                    out.writeln(f'for (size_t index = 0; index < {field.type.maximum_length} && index < {field.name + '_length'}; ++index) ')
 
                     def write_block():
                         out.writeln(
