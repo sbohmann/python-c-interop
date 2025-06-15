@@ -68,7 +68,7 @@ class CHeaderGenerator:
             for field in struct.fields:
                 c_type = self._ctypes.for_type(field.type)
                 if type(c_type) is tuple:
-                    self._out.write(PascalToCCase(c_type[0]).result, ' ', field.name, c_type[1], ';')
+                    self._out.write(c_type[0], ' ', field.name, c_type[1], ';')
                 else:
                     self._out.write(c_type, ' ', field.name, ';')
                 if field.comment:

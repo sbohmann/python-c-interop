@@ -18,12 +18,14 @@ def with_int64_attribute(owner, attribute_name, action):
         attribute_name,
         with_int64(
             'python_value',
+            attribute_name,
             action))
 
 
-def with_int64(value_name, action):
+def with_int64(python_name, value_name, action):
     return MacroCall(
         'with_pylong_as_int64',
+        python_name,
         value_name,
         action)
 
@@ -82,7 +84,7 @@ class MacroCall:
 
     def writeln(self, out: CodeWriter):
         self.write(out)
-        out.writeln()
+        out.writeln(';')
 
 
 def quote(text: str):

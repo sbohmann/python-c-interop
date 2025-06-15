@@ -44,7 +44,7 @@ class CPythonConversionGenerator:
             out.writeln('        fail_with_message("Illegal ordinal value for enum ', enum.name, ' [%d]", ordinal);')
             out.writeln('}')
 
-        self._code.block(write_body, ';')
+        self._code.block(write_body)
         self._code.writeln()
 
     def _write_enum_c_to_python_conversion(self, enum):
@@ -53,14 +53,14 @@ class CPythonConversionGenerator:
         self._code.write(signature, ' ')
 
         def write_body(out):
-            out.writeln('static PyObject *enum_class = load_class("', self.module.name, '", "', enum.name, '")')
-            out.writeln('result = return PyObject_CallMethod(enum_class, "i", (int) value);')
+            out.writeln('static PyObject *enum_class = load_class("', self.module.name, '", "', enum.name, '");')
+            out.writeln('PyObject *result = PyObject_CallMethod(enum_class, "i", value);')
             out.write('if (result == NULL) ')
             out.block(lambda: out.writeln(
                 'fail_with_message("Unable to convert ordinal value [%d] to enum ', enum.name, ', value);'))
             out.writeln('return result;')
 
-        self._code.block(write_body, ';')
+        self._code.block(write_body)
         self._code.writeln()
 
     def _write_struct_python_to_c_conversion(self, struct):
@@ -97,7 +97,7 @@ class CPythonConversionGenerator:
                     raise ValueError(f'Unsupported type [{field.type.name}] of field [{struct.name}.{field.name}]')
             out.writeln('return result;')
 
-        self._code.block(write_body, ';')
+        self._code.block(write_body)
         self._code.writeln()
 
     def _write_struct_c_to_python_conversion(self, struct):
@@ -176,5 +176,5 @@ class CPythonConversionGenerator:
                     raise ValueError(f'Unsupported type [{field.type.name}] of field [{struct.name}.{field.name}]')
             out.writeln('return result;')
 
-        self._code.block(write_body, ';')
+        self._code.block(write_body)
         self._code.writeln()

@@ -39,18 +39,20 @@ class CTypes:
             # TODO import if necessary
             if type(t) is Struct:
                 if typing.cast(Struct, t).typedef:
-                    return PascalToCCase(t.name).result
+                    return PascalToCCase(t.name).result + '_t'
                 else:
                     return 'struct ' + PascalToCCase(t.name).result
             elif type(t) is Enumeration:
                 if typing.cast(Enumeration, t).typedef:
-                    return PascalToCCase(t.name).result
+                    return PascalToCCase(t.name).result + '_e'
                 else:
                     return 'enum ' + PascalToCCase(t.name).result
             elif type(t) is List:
                 list_type = typing.cast(List, t)
                 if list_type.maximum_length is not None:
-                    return f'{list_type.element_type.name}', f'[{list_type.maximum_length}]'
+                    return f'{self.for_type(list_type.element_type)}', f'[{list_type.maximum_length}]'
+                else:
+                    raise ValueError('Arbitrary length C lists not yet implemented')
         raise ValueError("Unsupported type " + t.name)
 
 
