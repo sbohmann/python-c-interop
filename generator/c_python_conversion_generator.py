@@ -6,10 +6,10 @@ from model.model import Module, Struct, Enumeration, PrimitiveType, List
 
 class CPythonConversionGenerator:
     def __init__(self, module: Module):
+        self._ctypes = CTypes()
         self.module = module
         self._header = CodeWriter(CodeWriterMode.C)
         self._code = CodeWriter(CodeWriterMode.C)
-        self.ctypes = CTypes()
 
     def run(self):
         for enum in self.module.enums:
@@ -23,7 +23,7 @@ class CPythonConversionGenerator:
         return self._header.result(), self._code.result()
 
     def _write_enum_python_to_c_conversion(self, enum):
-        signature = 'enum ' + enum.name + ' ' + enum.name + '_to_c(const PyObject *python_enum)'
+        signature = self._ctypes.for_type(enum) + ' ' + enum.name + '_to_c(const PyObject *python_enum)'
         self._header.writeln(signature, ';')
         self._code.write(signature, ' ')
 
@@ -48,28 +48,28 @@ class CPythonConversionGenerator:
         self._code.writeln()
 
     def _write_enum_c_to_python_conversion(self, enum):
-        signature = 'PyObject * ' + enum.name + '_to_python(enum ' + enum.name + ' value)'
+        signature = 'PyObject * ' + enum.name + '_to_python(' + self._ctypes.for_type(enum) + ' value)'
         self._header.writeln(signature, ';')
         self._code.write(signature, ' ')
 
         def write_body(out):
             out.writeln('static PyObject *enum_class = load_class("', self.module.name, '", "', enum.name, '");')
-            out.writeln('PyObject *result = PyObject_CallMethod(enum_class, "i", value);')
+            out.writeln('PyObject *result = PyObject_CallFunction(enum_class, "i", value);')
             out.write('if (result == NULL) ')
             out.block(lambda: out.writeln(
-                'fail_with_message("Unable to convert ordinal value [%d] to enum ', enum.name, ', value);'))
+                'fail_with_message("Unable to convert ordinal value [%d] to enum ', enum.name, ', value");'))
             out.writeln('return result;')
 
         self._code.block(write_body)
         self._code.writeln()
 
     def _write_struct_python_to_c_conversion(self, struct):
-        signature = 'struct ' + struct.name + ' ' + struct.name + '_to_c(PyObject *python_struct)'
+        signature = self._ctypes.for_type(struct) + ' ' + struct.name + '_to_c(PyObject *python_struct)'
         self._header.writeln(signature, ';')
         self._code.write(signature, ' ')
 
         def write_body(out):
-            out.writeln('struct ', struct.name, ' result = {};')
+            out.writeln(self._ctypes.for_type(struct), ' result = {};')
             for field in struct.fields:
                 if type(field.type) is Struct or type(field.type) is Enumeration:
                     out.writeln('result.', field.name, ' = ', field.type.name, '_to_c(python_struct.', field.name, ')')
@@ -101,16 +101,16 @@ class CPythonConversionGenerator:
         self._code.writeln()
 
     def _write_struct_c_to_python_conversion(self, struct):
-        signature = 'PyObject * ' + struct.name + '_to_python(struct ' + struct.name + ' c_struct)'
+        signature = 'PyObject * ' + struct.name + '_to_python(' + self._ctypes.for_type(struct) + ' c_struct)'
         self._header.writeln(signature, ';')
         self._code.write(signature, ' ')
 
         def write_body(out):
             out.writeln('static PyObject *struct_class = load_class("', self.module.name, '", "', struct.name, '")')
-            out.writeln('PyObject *result = PyObject_CallMethod(struct_class, "");')
+            out.writeln('PyObject *result = PyObject_CallFunction(struct_class, "");')
             out.write('if (result == NULL) ')
             out.block(lambda: out.writeln(
-                'fail_with_message("Unable to instantiate struct ', struct.name, ');'))
+                'fail_with_message("Unable to instantiate struct ', struct.name, '");'))
             for field in struct.fields:
                 if type(field.type) is Struct or type(field.type) is Enumeration:
                     (MacroCall(
@@ -167,7 +167,7 @@ class CPythonConversionGenerator:
                     # TODO create python list
                     out.writeln(f'for (size_t index = 0; index < ...; ++index) ')
                     def write_block():
-                        out.writeln(f'{self.ctypes.for_type(field.type.type_arguments[0])} item = c_struct.{field.name}[index];')
+                        out.writeln(f'{self._ctypes.for_type(field.type.type_arguments[0])} item = c_struct.{field.name}[index];')
                         # TODO add to python list
                     # TODO set python attribute
                     out.block(write_block)
