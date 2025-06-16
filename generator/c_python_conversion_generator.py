@@ -74,36 +74,36 @@ class CPythonConversionGenerator:
         def write_body(out):
             out.writeln(self._ctypes.for_type(struct), ' result = {};')
             for field in struct.fields:
-                if type(field.type) is Struct or type(field.type) is Enumeration:
-                    (self._attributes.with_attribute(
-                        'python_struct',
-                        field.name,
-                        'result.' + field.name + ' = ' + field.type.name + '_to_c(python_value)')
-                     .writeln(out))
-                elif type(field.type) is PrimitiveType and field.type.is_integer:
-                    # TODO check value range! So easy to breach them from the python side ^^
-                    (self._attributes.with_int64_attribute(
-                        'python_struct',
-                        field.name,
-                        'result.' + field.name + ' = ' + field.name)
-                     .writeln(out))
-                elif type(field.type) is PrimitiveType and field.type in [PrimitiveType.Float, PrimitiveType.Double]:
-                    (self._attributes.with_float_attribute(
-                        'python_struct',
-                        field.name,
-                        'result.' + field.name + ' = ' + field.name)
-                     .writeln(out))
-                elif type(field.type) is List:
-                    (self._attributes.with_list_attribute_elements(
-                        'python_struct',
-                        field.name,
-                        field.type,
-                        f'result.{field.name}[item.index] = item.value')
-                     .writeln(out))
-                else:
-                    # TODO implement the missing types
-                    raise ValueError(f'Unsupported type [{field.type.name}] of field [{struct.name}.{field.name}]')
+                (assignment(f'result.{field.name}', field.name, field.type)
+                 .writeln(out))
             out.writeln('return result;')
+
+        def assignment(target, field_name, value_type):
+            if type(value_type) is Struct or type(value_type) is Enumeration:
+                return self._attributes.with_attribute(
+                    'python_struct',
+                    field_name,
+                    target + ' = ' + value_type.name + '_to_c(python_value)')
+            elif type(value_type) is PrimitiveType and value_type.is_integer:
+                # TODO check value range! So easy to breach them from the python side ^^
+                return self._attributes.with_int64_attribute(
+                    'python_struct',
+                    field_name,
+                    target + ' = ' + field_name)
+            elif type(value_type) is PrimitiveType and value_type in [PrimitiveType.Float, PrimitiveType.Double]:
+                return self._attributes.with_float_attribute(
+                    'python_struct',
+                    field_name,
+                    target + ' = ' + field_name)
+            elif type(value_type) is List:
+                return self._attributes.with_list_attribute_elements(
+                    'python_struct',
+                    field_name,
+                    value_type,
+                    assignment(f'{target}[item_index]', field_name + '_item', value_type.type_arguments[0]))
+            else:
+                # TODO implement the missing types
+                raise ValueError(f'Unsupported type [{value_type.name}] of field [{struct.name}.{field_name}]')
 
         self._code.block(write_body)
         self._code.writeln()
