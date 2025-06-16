@@ -35,12 +35,14 @@ def with_float_attribute(owner, attribute_name, action):
         attribute_name,
         with_float(
             'python_value',
+            attribute_name,
             action))
 
 
-def with_float(value_name, action):
+def with_float(python_name, value_name, action):
     return MacroCall(
         'with_pyfloat_as_double',
+        python_name,
         value_name,
         action)
 

@@ -85,13 +85,13 @@ class CPythonConversionGenerator:
                     (with_int64_attribute(
                         'python_struct',
                         field.name,
-                        'result.' + field.name + ' = python_value')
+                        'result.' + field.name + ' = ' + field.name)
                      .writeln(out))
                 elif type(field.type) is PrimitiveType and field.type in [PrimitiveType.Float, PrimitiveType.Double]:
                     (with_float_attribute(
                         'python_struct',
                         field.name,
-                        'result.' + field.name + ' = python_value')
+                        'result.' + field.name + ' = ' + field.name)
                      .writeln(out))
                 elif type(field.type) is List:
                     (with_list_attribute(
