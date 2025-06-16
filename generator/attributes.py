@@ -1,66 +1,75 @@
 from typing import Callable
 
 from generator.codewriter import CodeWriter
+from generator.ctypes import CTypes
+from model.model import List
 
 
-def with_attribute(owner, attribute_name, action):
-    return MacroCall(
-        'with_attribute',
-        owner,
-        quote(attribute_name),
-        'python_value',
-        action)
+class Attributes:
+    def __init__(self, ctypes: CTypes):
+        self._ctypes = ctypes
 
-
-def with_int64_attribute(owner, attribute_name, action):
-    return with_attribute(
-        owner,
-        attribute_name,
-        with_int64(
+    def with_attribute(self, owner, attribute_name, action):
+        return MacroCall(
+            'with_attribute',
+            owner,
+            quote(attribute_name),
             'python_value',
+            action)
+
+
+    def with_int64_attribute(self, owner, attribute_name, action):
+        return self.with_attribute(
+            owner,
             attribute_name,
-            action))
+            self.with_int64(
+                'python_value',
+                attribute_name,
+                action))
 
 
-def with_int64(python_name, value_name, action):
-    return MacroCall(
-        'with_pylong_as_int64',
-        python_name,
-        value_name,
-        action)
+    def with_int64(self, python_name, value_name, action):
+        return MacroCall(
+            'with_pylong_as_int64',
+            python_name,
+            value_name,
+            action)
 
-def with_float_attribute(owner, attribute_name, action):
-    return with_attribute(
-        owner,
-        attribute_name,
-        with_float(
-            'python_value',
+    def with_float_attribute(self, owner, attribute_name, action):
+        return self.with_attribute(
+            owner,
             attribute_name,
-            action))
+            self.with_float(
+                'python_value',
+                attribute_name,
+                action))
 
 
-def with_float(python_name, value_name, action):
-    return MacroCall(
-        'with_pyfloat_as_double',
-        python_name,
-        value_name,
-        action)
+    def with_float(self, python_name, value_name, action):
+        return MacroCall(
+            'with_pyfloat_as_double',
+            python_name,
+            value_name,
+            action)
 
 
-def with_list_attribute(owner, attribute_name, action):
-    return with_attribute(
-        owner,
-        attribute_name,
-        with_list(
-            'python_value',
-            action))
+    def with_list_attribute_elements(self, owner, attribute_name, list_type: List, action):
+        return self.with_attribute(
+            owner,
+            attribute_name,
+            self.with_list_elements(
+                'python_value',
+                list_type,
+                action))
 
 
-def with_list(value_name, action):
-    return MacroCall(
-        'with_list_elements',
-        value_name,
-        action)
+    def with_list_elements(self, value_name, list_type, action):
+        return MacroCall(
+            'with_list_elements',
+            value_name,
+            self._ctypes.for_type(list_type.element_type),
+            list_type.maximum_length,
+            action)
 
 
 class MacroCall:

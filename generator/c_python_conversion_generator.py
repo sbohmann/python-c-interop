@@ -1,5 +1,4 @@
-from generator.attributes import with_int64_attribute, MacroCall, quote, with_list_attribute, with_float_attribute, \
-    with_attribute
+from generator.attributes import Attributes, MacroCall, quote
 from generator.codewriter import CodeWriter, CodeWriterMode
 from generator.ctypes import CTypes
 from model.model import Module, Struct, Enumeration, PrimitiveType, List
@@ -11,6 +10,7 @@ class CPythonConversionGenerator:
         self.module = module
         self._header = CodeWriter(CodeWriterMode.C)
         self._code = CodeWriter(CodeWriterMode.C)
+        self._attributes = Attributes(self._ctypes)
 
     def run(self):
         for enum in self.module.enums:
@@ -30,7 +30,7 @@ class CPythonConversionGenerator:
 
         def write_body(out):
             out.writeln('int ordinal = -1;')
-            (with_int64_attribute(
+            (self._attributes.with_int64_attribute(
                 'python_enum',
                 'value',
                 'ordinal = value')
@@ -75,28 +75,29 @@ class CPythonConversionGenerator:
             out.writeln(self._ctypes.for_type(struct), ' result = {};')
             for field in struct.fields:
                 if type(field.type) is Struct or type(field.type) is Enumeration:
-                    (with_attribute(
+                    (self._attributes.with_attribute(
                         'python_struct',
                         field.name,
                         'result.' + field.name + ' = ' + field.type.name + '_to_c(python_value)')
                      .writeln(out))
                 elif type(field.type) is PrimitiveType and field.type.is_integer:
                     # TODO check value range! So easy to breach them from the python side ^^
-                    (with_int64_attribute(
+                    (self._attributes.with_int64_attribute(
                         'python_struct',
                         field.name,
                         'result.' + field.name + ' = ' + field.name)
                      .writeln(out))
                 elif type(field.type) is PrimitiveType and field.type in [PrimitiveType.Float, PrimitiveType.Double]:
-                    (with_float_attribute(
+                    (self._attributes.with_float_attribute(
                         'python_struct',
                         field.name,
                         'result.' + field.name + ' = ' + field.name)
                      .writeln(out))
                 elif type(field.type) is List:
-                    (with_list_attribute(
+                    (self._attributes.with_list_attribute_elements(
                         'python_struct',
                         field.name,
+                        field.type,
                         f'result.{field.name}[item.index] = item.value')
                      .writeln(out))
                 else:
@@ -123,7 +124,7 @@ class CPythonConversionGenerator:
             for field in struct.fields:
                 if type(field.type) is Struct or type(field.type) is Enumeration:
                     (MacroCall(
-                        'set_python_attribute',
+                        'set_python_attribute_and_decref',
                         'result',
                         quote(field.name),
                         field.type.name + '_to_python(c_struct.' + field.name + ')')
@@ -134,7 +135,7 @@ class CPythonConversionGenerator:
                         'c_struct.' + field.name,
                         'value',
                         MacroCall(
-                            'set_python_attribute',
+                            'set_python_attribute_and_decref',
                             'result',
                             quote(field.name),
                             'value'))
@@ -145,7 +146,7 @@ class CPythonConversionGenerator:
                         'c_struct.' + field.name,
                         'value',
                         MacroCall(
-                            'set_python_attribute',
+                            'set_python_attribute_and_decref',
                             'result',
                             quote(field.name),
                             'value'))
@@ -156,7 +157,7 @@ class CPythonConversionGenerator:
                         'c_struct.' + field.name,
                         'value',
                         MacroCall(
-                            'set_python_attribute',
+                            'set_python_attribute_and_decref',
                             'result',
                             quote(field.name),
                             'value'))
@@ -167,22 +168,22 @@ class CPythonConversionGenerator:
                         'c_struct.' + field.name,
                         'value',
                         MacroCall(
-                            'set_python_attribute',
+                            'set_python_attribute_and_decref',
                             'result',
                             quote(field.name),
                             'value'))
                      .writeln(out))
                 elif type(field.type) is List:
-                    # TODO create python list
-                    out.writeln(f'for (size_t index = 0; index < {field.type.maximum_length} && index < {field.name + '_length'}; ++index) ')
-
-                    def write_block():
-                        out.writeln(
-                            f'{self._ctypes.for_type(field.type.type_arguments[0])} item = c_struct.{field.name}[index];')
-                        # TODO add to python list
-
-                    # TODO set python attribute
-                    out.block(write_block)
+                    (MacroCall(
+                        'with_array_as_pylist',
+                        'c_struct.' + field.name,
+                        'value',
+                        MacroCall(
+                            'set_python_attribute_and_decref',
+                            'result',
+                            quote(field.name),
+                            'value'))
+                     .writeln(out))
                 else:
                     # TODO implement the missing types
                     raise ValueError(f'Unsupported type [{field.type.name}] of field [{struct.name}.{field.name}]')

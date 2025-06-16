@@ -2,7 +2,7 @@ from enum import Enum
 
 from generator.codewriter import CodeWriter, CodeWriterMode
 from generator.ctypes import CTypes, PascalToCCase
-from model.model import Module
+from model.model import Module, List
 
 
 class Style(Enum):
@@ -79,6 +79,8 @@ class CHeaderGenerator:
                         self._out.writeln(f" /* {line} */")
                 else:
                     self._out.writeln()
+                if type(field.type) is List:
+                    self._out.writeln('size_t ', field.name, '_length;')
 
         if struct.typedef:
             self._out.block(write_struct_body, ' ' + PascalToCCase(struct.name).result + postfix(struct) + ';')
