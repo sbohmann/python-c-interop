@@ -177,12 +177,12 @@ class CPythonConversionGenerator:
                     (MacroCall(
                         'with_array_as_pylist',
                         'c_struct.' + field.name,
-                        'value',
+                        field.type.element_type.name + '_to_python',
                         MacroCall(
                             'set_python_attribute_and_decref',
                             'result',
                             quote(field.name),
-                            'value'))
+                            'pylist'))
                      .writeln(out))
                 else:
                     # TODO implement the missing types
