@@ -29,7 +29,7 @@ class CPythonConversionGenerator:
         self._code.write(signature, ' ')
 
         def write_body(out):
-            out.writeln('int ordinal = -1;')
+            out.writeln('int ordinal;')
             (self._attributes.with_int64_attribute(
                 'python_enum',
                 'value',
@@ -67,7 +67,7 @@ class CPythonConversionGenerator:
         self._code.writeln()
 
     def _write_struct_python_to_c_conversion(self, struct):
-        signature = self._ctypes.for_type(struct) + ' ' + struct.name + '_to_c(PyObject *python_struct)'
+        signature = self._ctypes.for_type(struct) + ' ' + struct.name + '_to_c(const PyObject *python_struct)'
         self._header.writeln(signature, ';')
         self._code.write(signature, ' ')
 
