@@ -5,11 +5,10 @@ from model.model import Module, Type, PrimitiveType, List, Set, Map
 
 
 class PythonModuleGenerator:
-    _out = CodeWriter(CodeWriterMode.Python)
-    _complexTypesWritten = set()
-
     def __init__(self, module: Module):
         self.module = module
+        self._out = CodeWriter(CodeWriterMode.Python)
+        self._complexTypesWritten = set()
 
     def run(self):
         for enum in self.module.enums:
@@ -25,7 +24,7 @@ class PythonModuleGenerator:
     def _write_enum(self, enum):
         self._out.write('class ', enum.name, '(Enum):')
         def write_enum_body():
-            ordinal = 1
+            ordinal = enum.first_ordinal
             for value in enum.values:
                 self._out.writeln(value, ' = ', str(ordinal))
                 ordinal += 1
