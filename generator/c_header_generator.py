@@ -62,7 +62,7 @@ class CHeaderGenerator:
         if struct.typedef:
             self._before_block('typedef struct')
         else:
-            self._before_block('struct ', PascalToCCase(struct.name))
+            self._before_block('struct ', PascalToCCase(struct.name).result)
 
         def write_struct_body():
             for field in struct.fields:

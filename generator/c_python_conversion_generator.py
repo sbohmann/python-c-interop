@@ -24,7 +24,7 @@ class CPythonConversionGenerator:
         return self._header.result(), self._code.result()
 
     def _write_enum_python_to_c_conversion(self, enum):
-        signature = self._ctypes.for_type(enum) + ' ' + enum.name + '_to_c(const PyObject *python_enum)'
+        signature = self._ctypes.for_type(enum) + ' ' + enum.name + '_to_c(PyObject *python_enum)'
         self._header.writeln(signature, ';')
         self._code.write(signature, ' ')
 
@@ -56,7 +56,7 @@ class CPythonConversionGenerator:
         def write_body(out):
             out.writeln('static PyObject *enum_class = nullptr;')
             out.write('if (enum_class == nullptr) ')
-            out.block(lambda: out.writeln('load_class("', self.module.name, '", "', enum.name, '");'))
+            out.block(lambda: out.writeln('enum_class = load_class("', self.module.name, '", "', enum.name, '");'))
             out.writeln('PyObject *result = PyObject_CallFunction(enum_class, "i", value);')
             out.write('if (result == NULL) ')
             out.block(lambda: out.writeln(
@@ -67,7 +67,7 @@ class CPythonConversionGenerator:
         self._code.writeln()
 
     def _write_struct_python_to_c_conversion(self, struct):
-        signature = self._ctypes.for_type(struct) + ' ' + struct.name + '_to_c(const PyObject *python_struct)'
+        signature = self._ctypes.for_type(struct) + ' ' + struct.name + '_to_c(PyObject *python_struct)'
         self._header.writeln(signature, ';')
         self._code.write(signature, ' ')
 
@@ -116,7 +116,7 @@ class CPythonConversionGenerator:
         def write_body(out):
             out.writeln('static PyObject *struct_class = nullptr;')
             out.write('if (struct_class == nullptr) ')
-            out.block(lambda: out.writeln('load_class("', self.module.name, '", "', struct.name, '");'))
+            out.block(lambda: out.writeln('struct_class = load_class("', self.module.name, '", "', struct.name, '");'))
             out.writeln('PyObject *result = PyObject_CallFunction(struct_class, "");')
             out.write('if (result == NULL) ')
             out.block(lambda: out.writeln(
