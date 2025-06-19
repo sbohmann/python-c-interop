@@ -5,9 +5,10 @@ from model.model import Module, Struct, Enumeration, PrimitiveType, List
 
 
 class CPythonConversionGenerator:
-    def __init__(self, module: Module):
+    def __init__(self, module: Module, module_prefix=''):
         self._ctypes = CTypes()
         self._module = module
+        self._module_prefix = module_prefix
         self._protocol_name = module.name + '_protocol'
         self._header = CodeWriter(CodeWriterMode.C)
         self._code = CodeWriter(CodeWriterMode.C)
@@ -57,7 +58,7 @@ class CPythonConversionGenerator:
         def write_body(out):
             out.writeln('static PyObject *enum_class = nullptr;')
             out.write('if (enum_class == nullptr) ')
-            out.block(lambda: out.writeln('enum_class = load_class("', self._protocol_name, '", "', enum.name, '");'))
+            out.block(lambda: out.writeln('enum_class = load_class("', self._module_prefix + self._protocol_name, '", "', enum.name, '");'))
             out.writeln('PyObject *result = PyObject_CallFunction(enum_class, "i", value);')
             out.write('if (result == NULL) ')
             out.block(lambda: out.writeln(
@@ -117,7 +118,7 @@ class CPythonConversionGenerator:
         def write_body(out):
             out.writeln('static PyObject *struct_class = nullptr;')
             out.write('if (struct_class == nullptr) ')
-            out.block(lambda: out.writeln('struct_class = load_class("', self._protocol_name, '", "', struct.name, '");'))
+            out.block(lambda: out.writeln('struct_class = load_class("', self._module_prefix + self._protocol_name, '", "', struct.name, '");'))
             out.writeln('PyObject *result = PyObject_CallFunction(struct_class, "");')
             out.write('if (result == NULL) ')
             out.block(lambda: out.writeln(
