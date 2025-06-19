@@ -9,7 +9,7 @@ class CPythonConversionGenerator:
         self._ctypes = CTypes()
         self._module = module
         self._module_prefix = module_prefix
-        self._protocol_name = module.name + '_protocol'
+        self._protocol_name = 'python_' + module.name + '_protocol'
         self._header = CodeWriter(CodeWriterMode.C)
         self._code = CodeWriter(CodeWriterMode.C)
         self._attributes = Attributes(self._ctypes)
