@@ -7,16 +7,17 @@ from model.model import Module, Struct, Enumeration, PrimitiveType, List
 class CPythonConversionGenerator:
     def __init__(self, module: Module):
         self._ctypes = CTypes()
-        self.module = module
+        self._module = module
+        self._protocol_name = module.name + '_protocol'
         self._header = CodeWriter(CodeWriterMode.C)
         self._code = CodeWriter(CodeWriterMode.C)
         self._attributes = Attributes(self._ctypes)
 
     def run(self):
-        for enum in self.module.enums:
+        for enum in self._module.enums:
             self._write_enum_python_to_c_conversion(enum)
             self._write_enum_c_to_python_conversion(enum)
-        for struct in self.module.structs:
+        for struct in self._module.structs:
             self._write_struct_python_to_c_conversion(struct)
             self._write_struct_c_to_python_conversion(struct)
 
@@ -56,7 +57,7 @@ class CPythonConversionGenerator:
         def write_body(out):
             out.writeln('static PyObject *enum_class = nullptr;')
             out.write('if (enum_class == nullptr) ')
-            out.block(lambda: out.writeln('enum_class = load_class("', self.module.name, '", "', enum.name, '");'))
+            out.block(lambda: out.writeln('enum_class = load_class("', self._protocol_name, '", "', enum.name, '");'))
             out.writeln('PyObject *result = PyObject_CallFunction(enum_class, "i", value);')
             out.write('if (result == NULL) ')
             out.block(lambda: out.writeln(
@@ -116,7 +117,7 @@ class CPythonConversionGenerator:
         def write_body(out):
             out.writeln('static PyObject *struct_class = nullptr;')
             out.write('if (struct_class == nullptr) ')
-            out.block(lambda: out.writeln('struct_class = load_class("', self.module.name, '", "', struct.name, '");'))
+            out.block(lambda: out.writeln('struct_class = load_class("', self._protocol_name, '", "', struct.name, '");'))
             out.writeln('PyObject *result = PyObject_CallFunction(struct_class, "");')
             out.write('if (result == NULL) ')
             out.block(lambda: out.writeln(
