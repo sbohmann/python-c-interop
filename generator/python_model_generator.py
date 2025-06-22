@@ -36,8 +36,16 @@ class PythonModuleGenerator:
         self._out.write('class ', struct.name, ':')
         def write_struct_body():
             for field in struct.fields:
-                self._out.writeln(field.name, ': ', self._python_type_for_type(field.type), ' = ',
+                self._out.write(field.name, ': ', self._python_type_for_type(field.type), ' = ',
                                   default_value_for_type(field.type))
+                if field.comment:
+                    lines = [stripped for line in field.comment.split('\n') if len(stripped := line.strip()) > 0]
+                    if len(lines) == 0:
+                        raise ValueError(f"Field {field.name} of struct {struct.name} has an empty comment")
+                    for line in lines:
+                        self._out.writeln(f" # {line}")
+                else:
+                    self._out.writeln()
         self._out.block(write_struct_body)
         self._out.writeln()
 
