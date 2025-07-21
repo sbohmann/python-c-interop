@@ -2,7 +2,7 @@ from typing import Callable
 
 from generator.codewriter import CodeWriter
 from generator.ctypes import CTypes
-from model.model import List
+from model.model import List, Array
 
 
 class Attributes:
@@ -63,12 +63,31 @@ class Attributes:
                 action))
 
 
+    def with_array_attribute_elements(self, owner, attribute_name, array_type: Array, action):
+        return self.with_attribute(
+            owner,
+            attribute_name,
+            self.with_array_elements(
+                'python_value',
+                array_type,
+                action))
+
+
     def with_list_elements(self, value_name, list_type, action):
         return MacroCall(
             'with_list_elements',
             value_name,
             self._ctypes.for_type(list_type.element_type),
             list_type.maximum_length,
+            action)
+
+
+    def with_array_elements(self, value_name, array_type, action):
+        return MacroCall(
+            'with_array_elements',
+            value_name,
+            self._ctypes.for_type(array_type.element_type),
+            array_type.length,
             action)
 
 

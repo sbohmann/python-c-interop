@@ -1,7 +1,7 @@
 import re
 import typing
 
-from model.model import Type, PrimitiveType, Struct, Enumeration, List
+from model.model import Type, PrimitiveType, Struct, Enumeration, List, Array
 
 
 class CTypes:
@@ -48,11 +48,14 @@ class CTypes:
                 else:
                     return 'enum ' + PascalToCCase(t.name).result
             elif type(t) is List:
-                list_type = typing.cast(List, t)
-                if list_type.maximum_length is not None:
-                    return f'{self.for_type(list_type.element_type)}', f'[{list_type.maximum_length}]'
+                array_type = typing.cast(List, t)
+                if array_type.maximum_length is not None:
+                    return f'{self.for_type(array_type.element_type)}', f'[{array_type.maximum_length}]'
                 else:
                     raise ValueError('Arbitrary length C lists not yet implemented')
+            elif type(t) is Array:
+                array_type = typing.cast(Array, t)
+                return f'{self.for_type(array_type.element_type)}', f'[{array_type.length}]'
         raise ValueError("Unsupported type " + t.name)
 
 

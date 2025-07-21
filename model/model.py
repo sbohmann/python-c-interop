@@ -106,6 +106,16 @@ class List(Type):
             self.maximum_length: str = maximum_length.name
 
 
+class Array(Type):
+    def __init__(self, element_type: Type, length: Constant):
+        super().__init__(f'List[{element_type.name}]')
+        self.element_type = element_type
+        self.type_arguments = [element_type]
+        if length.type is not PrimitiveType.Integer:
+            raise ValueError(f'Unsupported list maximum length type: ${length.type}')
+        self.length: str = length.name
+
+
 class Set(Type):
     def __init__(self, name: str, element_type: Type):
         super().__init__(f'Set[{element_type.name}]')

@@ -1,7 +1,7 @@
 from generator.attributes import Attributes, MacroCall, quote
 from generator.codewriter import CodeWriter, CodeWriterMode
 from generator.ctypes import CTypes
-from model.model import Module, Struct, Enumeration, PrimitiveType, List
+from model.model import Module, Struct, Enumeration, PrimitiveType, List, Array
 
 
 class CPythonConversionGenerator:
@@ -103,6 +103,12 @@ class CPythonConversionGenerator:
                     field_name,
                     value_type,
                     assignment(f'{target}[item_index]', field_name + '_item', value_type.type_arguments[0]))
+            elif type(value_type) is Array:
+                return self._attributes.with_array_attribute_elements(
+                    'python_struct',
+                    field_name,
+                    value_type,
+                    assignment(f'{target}[item_index]', field_name + '_item', value_type.type_arguments[0]))
             else:
                 # TODO implement the missing types
                 raise ValueError(f'Unsupported type [{value_type.name}] of field [{struct.name}.{field_name}]')
@@ -175,7 +181,7 @@ class CPythonConversionGenerator:
                             quote(field.name),
                             'value'))
                      .writeln(out))
-                elif type(field.type) is List:
+                elif type(field.type) in (List, Array):
                     (MacroCall(
                         'with_array_as_pylist',
                         'c_struct.' + field.name,
