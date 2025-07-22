@@ -181,10 +181,22 @@ class CPythonConversionGenerator:
                             quote(field.name),
                             'value'))
                      .writeln(out))
-                elif type(field.type) in (List, Array):
+                elif type(field.type) is List:
                     (MacroCall(
                         'with_array_as_pylist',
                         'c_struct.' + field.name,
+                        field.type.element_type.name + '_to_python',
+                        MacroCall(
+                            'set_python_attribute_and_decref',
+                            'result',
+                            quote(field.name),
+                            'pylist'))
+                     .writeln(out))
+                elif type(field.type) is Array:
+                    (MacroCall(
+                        'with_array_as_pylist',
+                        'c_struct.' + field.name,
+                        field.type.length,
                         field.type.element_type.name + '_to_python',
                         MacroCall(
                             'set_python_attribute_and_decref',

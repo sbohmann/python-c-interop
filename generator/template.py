@@ -1,6 +1,6 @@
 import os
 
-from generator.c_header_generator import CHeaderGenerator
+from generator.c_header_generator import CHeaderGenerator, Style
 from generator.c_python_conversion_generator import CPythonConversionGenerator
 from generator.python_model_generator import PythonModuleGenerator
 from model.model import Module
@@ -14,10 +14,15 @@ def write_with_template(name: str, suffix: str, code: str, directory: str = '.')
     with open(input_path, 'r') as inputFile:
         content = inputFile.read().replace('@_code;', code.strip())
     output_path = os.path.join(directory, name + '.' + suffix)
+    print(f'Writing file {output_path}')
     with open(output_path, 'w') as outputFile:
         outputFile.write(content)
 
-def write_module_with_template(module: Module, directory: str = '.', module_prefix='python.generated'):
+def write_module_with_template(
+        module: Module,
+        directory: str = '.',
+        module_prefix='python.generated',
+        style: Style = Style.Knr):
     python_generator = PythonModuleGenerator(module)
     python_generator.run()
     write_with_template(
@@ -26,7 +31,7 @@ def write_module_with_template(module: Module, directory: str = '.', module_pref
         python_generator.result(),
         directory)
 
-    header_generator = CHeaderGenerator(module)
+    header_generator = CHeaderGenerator(module, style)
     header_generator.run()
     write_with_template(
         f'{module.name}_protocol',
@@ -34,6 +39,7 @@ def write_module_with_template(module: Module, directory: str = '.', module_pref
         header_generator.result(),
         directory)
 
+    # TODO style - requires CPythonConversionGenerator to also have a before_block method
     conversion_generator = CPythonConversionGenerator(module, module_prefix)
     conversion_generator.run()
     write_with_template(
