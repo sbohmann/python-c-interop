@@ -86,6 +86,12 @@ class CPythonConversionGenerator:
                     'python_struct',
                     field_name,
                     target + ' = ' + value_type.name + '_to_c(python_value)')
+            # TODO implemenet
+            # elif type(value_type) is PrimitiveType and value_type == PrimitiveType.Boolean:
+                # return self._attributes.with_int64_attribute(
+                #     'python_struct',
+                #     field_name,
+                #     target + ' = ' + field_name)
             elif type(value_type) is PrimitiveType and value_type.is_integer:
                 # TODO check value range! So easy to breach them from the python side ^^
                 return self._attributes.with_int64_attribute(
@@ -132,7 +138,7 @@ class CPythonConversionGenerator:
             for field in struct.fields:
                 if type(field.type) is Struct or type(field.type) is Enumeration:
                     (MacroCall(
-                        'set_python_attribute_and_decref',
+                        'set_python_attribute',
                         'result',
                         quote(field.name),
                         field.type.name + '_to_python(c_struct.' + field.name + ')')
@@ -143,7 +149,7 @@ class CPythonConversionGenerator:
                         'c_struct.' + field.name,
                         'value',
                         MacroCall(
-                            'set_python_attribute_and_decref',
+                            'set_python_attribute',
                             'result',
                             quote(field.name),
                             'value'))
@@ -154,7 +160,7 @@ class CPythonConversionGenerator:
                         'c_struct.' + field.name,
                         'value',
                         MacroCall(
-                            'set_python_attribute_and_decref',
+                            'set_python_attribute',
                             'result',
                             quote(field.name),
                             'value'))
@@ -165,7 +171,7 @@ class CPythonConversionGenerator:
                         'c_struct.' + field.name,
                         'value',
                         MacroCall(
-                            'set_python_attribute_and_decref',
+                            'set_python_attribute',
                             'result',
                             quote(field.name),
                             'value'))
@@ -176,7 +182,7 @@ class CPythonConversionGenerator:
                         'c_struct.' + field.name,
                         'value',
                         MacroCall(
-                            'set_python_attribute_and_decref',
+                            'set_python_attribute',
                             'result',
                             quote(field.name),
                             'value'))
@@ -187,7 +193,7 @@ class CPythonConversionGenerator:
                         'c_struct.' + field.name,
                         field.type.element_type.name + '_to_python',
                         MacroCall(
-                            'set_python_attribute_and_decref',
+                            'set_python_attribute',
                             'result',
                             quote(field.name),
                             'pylist'))
@@ -199,7 +205,7 @@ class CPythonConversionGenerator:
                         field.type.length,
                         field.type.element_type.name + '_to_python',
                         MacroCall(
-                            'set_python_attribute_and_decref',
+                            'set_python_attribute',
                             'result',
                             quote(field.name),
                             'pylist'))
