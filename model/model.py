@@ -33,6 +33,9 @@ class PrimitiveType(Type):
         self.type_arguments = []
         self.is_integer = keywords.get('is_integer') is True
 
+    def __str__(self):
+        return f'PrimitiveType.{self.name}'
+
 
 PrimitiveType.Boolean = PrimitiveType('Boolean')
 PrimitiveType.Integer = PrimitiveType('Integer', is_integer=True)

@@ -2,12 +2,8 @@ from enum import Enum
 
 from generator.codewriter import CodeWriter, CodeWriterMode
 from generator.ctypes import CTypes, PascalToCCase
+from generator.style import Style
 from model.model import Module, List
-
-
-class Style(Enum):
-    Knr = 1
-    Bsd = 2
 
 
 class CHeaderGenerator:
