@@ -35,11 +35,11 @@ class CToStringGenerator:
                 for value in enum.values:
                     self._module_out.writeln(f'case {value}:')
                     self._module_out.indent()
-                    self._module_out.writeln(f'OutputHandler_proces(out, "%s", "{value}");')
+                    self._module_out.writeln(f'OutputHandler_process(out, "%s", "{value}");')
                     self._module_out.unindent()
                 self._module_out.writeln(f'default:')
                 self._module_out.indent()
-                self._module_out.writeln(f'OutputHandler_proces(out, "Unknown %s value: %d", "{enum.name}", value);')
+                self._module_out.writeln(f'OutputHandler_process(out, "Unknown %s value: %d", "{enum.name}", value);')
                 self._module_out.unindent()
 
             self._before_block('switch (value) ')
