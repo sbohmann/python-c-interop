@@ -2,6 +2,7 @@ import os
 
 from generator.c_header_generator import CHeaderGenerator, Style
 from generator.c_python_conversion_generator import CPythonConversionGenerator
+from generator.c_to_string_generator import CToStringGenerator
 from generator.python_model_generator import PythonModuleGenerator
 from model.model import Module
 
@@ -51,4 +52,17 @@ def write_module_with_template(
         f'{module.name}_conversion',
         'c',
         conversion_generator.result()[1],
+        directory)
+
+    to_string_generator = CToStringGenerator(module, style=Style.Bsd)
+    to_string_generator.run()
+    write_with_template(
+        f'{module.name}_to_string',
+        'h',
+        to_string_generator.result()[0],
+        directory)
+    write_with_template(
+        f'{module.name}_to_string',
+        'c',
+        to_string_generator.result()[1],
         directory)
