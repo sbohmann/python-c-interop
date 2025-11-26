@@ -1,7 +1,7 @@
-from generator.attributes import Attributes, MacroCall, quote
-from generator.codewriter import CodeWriter, CodeWriterMode
-from generator.ctypes import CTypes
-from model.model import Module, Struct, Enumeration, PrimitiveType, List, Array
+from c_interop.generator.attributes import Attributes, MacroCall, quote
+from c_interop.generator.codewriter import CodeWriter, CodeWriterMode
+from c_interop.generator.ctypes import CTypes
+from c_interop.model.model import Module, Struct, Enumeration, PrimitiveType, List, Array
 
 
 class CPythonConversionGenerator:

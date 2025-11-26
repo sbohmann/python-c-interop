@@ -1,8 +1,8 @@
 from typing import Callable
 
-from generator.codewriter import CodeWriter
-from generator.ctypes import CTypes
-from model.model import List, Array
+from c_interop.generator.codewriter import CodeWriter
+from c_interop.generator.ctypes import CTypes
+from c_interop.model.model import List, Array
 
 
 class Attributes:

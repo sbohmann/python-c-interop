@@ -1,7 +1,7 @@
-from generator.c_header_generator import CHeaderGenerator
-from generator.c_python_conversion_generator import CPythonConversionGenerator
-from generator.python_model_generator import PythonModuleGenerator
-from model.model import Module, Enumeration, Struct, Field, PrimitiveType
+from c_interop.generator.c_header_generator import CHeaderGenerator
+from c_interop.generator.c_python_conversion_generator import CPythonConversionGenerator
+from c_interop.generator.python_model_generator import PythonModuleGenerator
+from c_interop.model.model import Module, Enumeration, Struct, Field, PrimitiveType
 
 colorEnum = Enumeration(
     'Color',

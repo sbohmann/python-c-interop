@@ -1,7 +1,7 @@
 import re
 import typing
 
-from model.model import Type, PrimitiveType, Struct, Enumeration, List, Array
+from c_interop.model.model import Type, PrimitiveType, Struct, Enumeration, List, Array
 
 
 class CTypes:

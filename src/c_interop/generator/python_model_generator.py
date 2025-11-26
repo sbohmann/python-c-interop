@@ -1,7 +1,7 @@
 import typing
 
-from generator.codewriter import CodeWriter, CodeWriterMode
-from model.model import Module, Type, PrimitiveType, List, Set, Map
+from c_interop.generator.codewriter import CodeWriter, CodeWriterMode
+from c_interop.model.model import Module, Type, PrimitiveType, List, Set, Map
 
 
 class PythonModuleGenerator:

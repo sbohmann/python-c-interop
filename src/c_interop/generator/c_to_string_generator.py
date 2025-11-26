@@ -1,7 +1,7 @@
-from generator.codewriter import CodeWriter, CodeWriterMode
-from generator.ctypes import CTypes, PascalToCCase
-from generator.style import Style
-from model.model import Module, List, Struct, Enumeration, PrimitiveType, Array
+from c_interop.generator.codewriter import CodeWriter, CodeWriterMode
+from c_interop.generator.ctypes import CTypes, PascalToCCase
+from c_interop.generator.style import Style
+from c_interop.model.model import Module, Struct, Enumeration, PrimitiveType, Array
 
 
 class CToStringGenerator:

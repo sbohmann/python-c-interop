@@ -1,10 +1,10 @@
 import os
 
-from generator.c_header_generator import CHeaderGenerator, Style
-from generator.c_python_conversion_generator import CPythonConversionGenerator
-from generator.c_to_string_generator import CToStringGenerator
-from generator.python_model_generator import PythonModuleGenerator
-from model.model import Module
+from c_interop.generator.c_header_generator import CHeaderGenerator, Style
+from c_interop.generator.c_python_conversion_generator import CPythonConversionGenerator
+from c_interop.generator.c_to_string_generator import CToStringGenerator
+from c_interop.generator.python_model_generator import PythonModuleGenerator
+from c_interop.model.model import Module
 
 
 def f():
