@@ -1,5 +1,4 @@
 /.idea
 /*.iml
 /.venv
-/non-public
 *.egg-info
