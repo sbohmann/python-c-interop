@@ -74,7 +74,7 @@ class CToStringGenerator:
                 self._module_out.writeln(f'{self._enum_c_name(field.type)}_to_string(value.{field.name}, out);')
             elif type(field.type) is PrimitiveType:
                 field_code = primitive_type_printf_code(field.type)
-                self._module_out.writeln(f'OutputHandler_process(out, "{field_code}", value.{field.name});')
+                self._module_out.writeln(f'OutputHandler_process(out, {field_code}, value.{field.name});')
             elif type(field.type) is Array:
                 def write_array_element_to_string():
                     self._module_out.writeln(f'OutputHandler_indent(out, indentation + 2);')
@@ -84,7 +84,7 @@ class CToStringGenerator:
                         self._module_out.writeln(f'{self._enum_c_name(field.type.element_type)}_to_string(value.{field.name}[index], out);')
                     elif type(field.type) is PrimitiveType:
                         element_code = primitive_type_printf_code(field.type.element_type)
-                        self._module_out.writeln(f'OutputHandler_process(out, "{element_code}", value.{field.name}[index]);')
+                        self._module_out.writeln(f'OutputHandler_process(out, {element_code}, value.{field.name}[index]);')
                     self._module_out.writeln(f'OutputHandler_process(out, ",\\n");')
 
                 self._module_out.writeln(f'OutputHandler_process(out, "[\\n");')
@@ -123,23 +123,23 @@ class CToStringGenerator:
 
 def primitive_type_printf_code(primitve_type):
     if primitve_type == PrimitiveType.Int64:
-        return '%lld'
+        return '"%" PRIi64'
     elif primitve_type == PrimitiveType.UInt64:
-        return '%llu'
+        return '"%" PRIu64'
     elif primitve_type == PrimitiveType.Int32:
-        return '%ld'
+        return '"%" PRIi32'
     elif primitve_type == PrimitiveType.UInt32:
-        return '%lu'
+        return '"%" PRIu32'
     elif primitve_type == PrimitiveType.Int16:
-        return '%d'
+        return '"%" PRIi16'
     elif primitve_type == PrimitiveType.UInt16:
-        return '%u'
+        return '"%" PRIu16'
     elif primitve_type == PrimitiveType.Int8:
-        return '%d'
+        return '"%" PRIi8'
     elif primitve_type == PrimitiveType.UInt8:
-        return '%u'
+        return '"%" PRIu8'
     elif primitve_type in (PrimitiveType.Double, PrimitiveType.Float):
-        return '%f'
+        return '"%f"'
     else:
         raise ValueError(f"Unsupported primitive type: {primitve_type}")
 
