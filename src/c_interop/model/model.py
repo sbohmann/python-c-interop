@@ -28,8 +28,9 @@ class PrimitiveType(Type):
     Double: 'PrimitiveType'
     String: 'PrimitiveType'
 
-    def __init__(self, name: str, **keywords):
+    def __init__(self, name: str, c_type: str, **keywords):
         self.name = name
+        self.c_type = c_type
         self.type_arguments = []
         self.is_integer = keywords.get('is_integer') is True
 
@@ -37,19 +38,19 @@ class PrimitiveType(Type):
         return f'PrimitiveType.{self.name}'
 
 
-PrimitiveType.Boolean = PrimitiveType('Boolean')
-PrimitiveType.Integer = PrimitiveType('Integer', is_integer=True)
-PrimitiveType.Int8 = PrimitiveType('Int8', is_integer=True)
-PrimitiveType.UInt8 = PrimitiveType('UInt8', is_integer=True)
-PrimitiveType.Int16 = PrimitiveType('Int16', is_integer=True)
-PrimitiveType.UInt16 = PrimitiveType('UInt16', is_integer=True)
-PrimitiveType.Int32 = PrimitiveType('Int32', is_integer=True)
-PrimitiveType.UInt32 = PrimitiveType('UInt32', is_integer=True)
-PrimitiveType.Int64 = PrimitiveType('Int64', is_integer=True)
-PrimitiveType.UInt64 = PrimitiveType('UInt64', is_integer=True)
-PrimitiveType.Float = PrimitiveType('Float')
-PrimitiveType.Double = PrimitiveType('Double')
-PrimitiveType.String = PrimitiveType('String')
+PrimitiveType.Boolean = PrimitiveType('Boolean', 'bool')
+PrimitiveType.Integer = PrimitiveType('Integer', 'int', is_integer=True)
+PrimitiveType.Int8 = PrimitiveType('Int8', 'int8_t', is_integer=True)
+PrimitiveType.UInt8 = PrimitiveType('UInt8', 'uint8_t', is_integer=True)
+PrimitiveType.Int16 = PrimitiveType('Int16', 'int16_t', is_integer=True)
+PrimitiveType.UInt16 = PrimitiveType('UInt16', 'uint16_t', is_integer=True)
+PrimitiveType.Int32 = PrimitiveType('Int32', 'int32_t', is_integer=True)
+PrimitiveType.UInt32 = PrimitiveType('UInt32', 'uint32_t', is_integer=True)
+PrimitiveType.Int64 = PrimitiveType('Int64', 'int64_t', is_integer=True)
+PrimitiveType.UInt64 = PrimitiveType('UInt64', 'uint64_t', is_integer=True)
+PrimitiveType.Float = PrimitiveType('Float', 'float')
+PrimitiveType.Double = PrimitiveType('Double', 'double')
+PrimitiveType.String = PrimitiveType('String', 'const char *')
 
 
 class Constant:

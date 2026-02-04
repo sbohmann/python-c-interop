@@ -35,7 +35,7 @@ class CPythonConversionGenerator:
             (self._attributes.with_int64_attribute(
                 'python_enum',
                 'value',
-                'ordinal = value')
+                'ordinal = (int) value')
              .writeln(self._code))
             out.writeln('switch (ordinal) {')
             ordinal = 1
@@ -97,7 +97,7 @@ class CPythonConversionGenerator:
                 return self._attributes.with_int64_attribute(
                     'python_struct',
                     field_name,
-                    target + ' = ' + field_name)
+                    target + ' = ' + integer_conversion_to_c(value_type, field_name))
             elif type(value_type) is PrimitiveType and value_type in [PrimitiveType.Float, PrimitiveType.Double]:
                 return self._attributes.with_float_attribute(
                     'python_struct',
@@ -217,3 +217,12 @@ class CPythonConversionGenerator:
 
         self._code.block(write_body)
         self._code.writeln()
+
+
+def integer_conversion_to_c(value_type: PrimitiveType, field_name: str):
+    if value_type in [PrimitiveType.Int64, PrimitiveType.UInt64]:
+        return field_name
+    elif value_type.is_integer:
+        return f'(({value_type.c_type})'
+    else:
+        raise ValueError(f'Unsupported integer conversion for type [{value_type}]')
