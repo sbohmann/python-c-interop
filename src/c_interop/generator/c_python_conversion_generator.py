@@ -169,7 +169,7 @@ class CPythonConversionGenerator:
                             'set_python_attribute',
                             'result',
                             quote(field.name),
-                            'PyLong_FromLong((int64_t) value)'))
+                            'value'))
                      .writeln(out))
                 elif field.type is PrimitiveType.Boolean:
                     (MacroCall(

@@ -101,7 +101,7 @@ class Enumeration(Type):
 
 class List(Type):
     def __init__(self, element_type: Type, maximum_length: Constant = None):
-        super().__init__(f'List[{element_type.name}]')
+        super().__init__(f'list[{element_type.name}]')
         self.element_type = element_type
         self.type_arguments = [element_type]
         if maximum_length is not None:
@@ -112,7 +112,7 @@ class List(Type):
 
 class Array(Type):
     def __init__(self, element_type: Type, length: Constant):
-        super().__init__(f'List[{element_type.name}]')
+        super().__init__(f'list[{element_type.name}]')
         self.element_type = element_type
         self.type_arguments = [element_type]
         if length.type is not PrimitiveType.Integer:
@@ -122,14 +122,14 @@ class Array(Type):
 
 class Set(Type):
     def __init__(self, name: str, element_type: Type):
-        super().__init__(f'Set[{element_type.name}]')
+        super().__init__(f'set[{element_type.name}]')
         self.name = name
         self.type_arguments = [element_type]
 
 
 class Map(Type):
     def __init__(self, name: str, key_type: Type, value_type: Type):
-        super().__init__(f'Map[{element_type.name}]')
+        super().__init__(f'map[{element_type.name}]')
         self.name = name
         self.type_arguments = [key_type, value_type]
 
