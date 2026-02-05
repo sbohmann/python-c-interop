@@ -62,7 +62,7 @@ class CPythonConversionGenerator:
             out.writeln('PyObject *result = PyObject_CallFunction(enum_class, "i", value);')
             out.write('if (result == NULL) ')
             out.block(lambda: out.writeln(
-                'fail_with_message("Unable to convert ordinal value [%d] to enum ', enum.name, ', value");'))
+                'fail_with_message("Unable to convert ordinal value [%d] to enum ', enum.name, ': ", value);'))
             out.writeln('return result;')
 
         self._code.block(write_body)
@@ -86,7 +86,7 @@ class CPythonConversionGenerator:
                     'python_struct',
                     field_name,
                     target + ' = ' + value_type.name + '_to_c(python_value)')
-            # TODO implemenet
+            # TODO implement
             # elif type(value_type) is PrimitiveType and value_type == PrimitiveType.Boolean:
                 # return self._attributes.with_int64_attribute(
                 #     'python_struct',
@@ -108,16 +108,33 @@ class CPythonConversionGenerator:
                     'python_struct',
                     field_name,
                     value_type,
-                    assignment(f'{target}[item_index]', field_name + '_item', value_type.type_arguments[0]))
+                    item_assignment(f'{target}[item_index]', value_type.type_arguments[0]))
             elif type(value_type) is Array:
                 return self._attributes.with_array_attribute_elements(
                     'python_struct',
                     field_name,
                     value_type,
-                    assignment(f'{target}[item_index]', field_name + '_item', value_type.type_arguments[0]))
+                    item_assignment(f'{target}[item_index]', value_type.type_arguments[0]))
             else:
                 # TODO implement the missing types
                 raise ValueError(f'Unsupported type [{value_type.name}] of field [{struct.name}.{field_name}]')
+
+        def item_assignment(target, value_type):
+            if type(value_type) is Struct or type(value_type) is Enumeration:
+                return target + ' = ' + value_type.name + '_to_c(item_value)'
+            # TODO implement
+            # elif type(value_type) is PrimitiveType and value_type == PrimitiveType.Boolean:
+            # return target + ' = ' + field_name)
+            elif type(value_type) is PrimitiveType and value_type.is_integer:
+                # TODO check value range! So easy to breach them from the python side ^^
+                return target + ' = ' + integer_conversion_to_c(value_type, 'item_value')
+            elif type(value_type) is PrimitiveType and value_type in [PrimitiveType.Float, PrimitiveType.Double]:
+                return target + ' = ' + 'item_value'
+            elif type(value_type) in [List, Array]:
+                raise ValueError("Lists or Arrays as element types are not supported. Please, create indirection via a struct.")
+            else:
+                # TODO implement the missing types
+                raise ValueError(f'Unsupported type [{value_type.name}] of List / Array item.')
 
         self._code.block(write_body)
         self._code.writeln()
@@ -152,7 +169,7 @@ class CPythonConversionGenerator:
                             'set_python_attribute',
                             'result',
                             quote(field.name),
-                            'value'))
+                            'PyLong_FromLong((int64_t) value)'))
                      .writeln(out))
                 elif field.type is PrimitiveType.Boolean:
                     (MacroCall(
@@ -220,9 +237,9 @@ class CPythonConversionGenerator:
 
 
 def integer_conversion_to_c(value_type: PrimitiveType, field_name: str):
-    if value_type in [PrimitiveType.Int64, PrimitiveType.UInt64]:
+    if value_type in [PrimitiveType.Int64]:
         return field_name
     elif value_type.is_integer:
-        return f'(({value_type.c_type})'
+        return f'({value_type.c_type}) {field_name}'
     else:
         raise ValueError(f'Unsupported integer conversion for type [{value_type}]')
