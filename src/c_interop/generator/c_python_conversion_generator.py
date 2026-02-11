@@ -98,7 +98,12 @@ class CPythonConversionGenerator:
                     'python_struct',
                     field_name,
                     target + ' = ' + integer_conversion_to_c(value_type, field_name))
-            elif type(value_type) is PrimitiveType and value_type in [PrimitiveType.Float, PrimitiveType.Double]:
+            elif value_type == PrimitiveType.Float:
+                return self._attributes.with_float_attribute(
+                    'python_struct',
+                    field_name,
+                    target + ' = (float) ' + field_name)
+            elif value_type == PrimitiveType.Double:
                 return self._attributes.with_float_attribute(
                     'python_struct',
                     field_name,
