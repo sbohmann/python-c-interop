@@ -56,8 +56,8 @@ class CPythonConversionGenerator:
         self._code.write(signature, ' ')
 
         def write_body(out):
-            out.writeln('static PyObject *enum_class = nullptr;')
-            out.write('if (enum_class == nullptr) ')
+            out.writeln('static PyObject *enum_class = NULL;')
+            out.write('if (enum_class == NULL) ')
             out.block(lambda: out.writeln('enum_class = load_class("', self._module_prefix + self._protocol_name, '", "', enum.name, '");'))
             out.writeln('PyObject *result = PyObject_CallFunction(enum_class, "i", value);')
             out.write('if (result == NULL) ')
@@ -150,8 +150,8 @@ class CPythonConversionGenerator:
         self._code.write(signature, ' ')
 
         def write_body(out):
-            out.writeln('static PyObject *struct_class = nullptr;')
-            out.write('if (struct_class == nullptr) ')
+            out.writeln('static PyObject *struct_class = NULL;')
+            out.write('if (struct_class == NULL) ')
             out.block(lambda: out.writeln('struct_class = load_class("', self._module_prefix + self._protocol_name, '", "', struct.name, '");'))
             out.writeln('PyObject *result = PyObject_CallFunction(struct_class, "");')
             out.write('if (result == NULL) ')
