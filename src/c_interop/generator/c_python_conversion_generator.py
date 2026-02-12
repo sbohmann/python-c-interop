@@ -74,7 +74,7 @@ class CPythonConversionGenerator:
         self._code.write(signature, ' ')
 
         def write_body(out):
-            out.writeln(self._ctypes.for_type(struct), ' result = {};')
+            out.writeln(self._ctypes.for_type(struct), ' result = {0};')
             for field in struct.fields:
                 (assignment(f'result.{field.name}', field.name, field.type)
                  .writeln(out))
